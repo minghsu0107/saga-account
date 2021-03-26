@@ -1,0 +1,66 @@
+package grpc
+
+import (
+	"net"
+
+	"github.com/minghsu0107/saga-account/service/auth"
+	"go.opencensus.io/plugin/ocgrpc"
+
+	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
+	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
+	"github.com/minghsu0107/saga-account/config"
+	pb "github.com/minghsu0107/saga-pb"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+)
+
+// Server is the grpc server type
+type Server struct {
+	s          *grpc.Server
+	jwtAuthSvc auth.JWTAuthService
+}
+
+// NewGRPCServer is the factory of grpc server
+func NewGRPCServer(jwtAuthSvc auth.JWTAuthService) (*Server, error) {
+	var srv Server
+	srv.jwtAuthSvc = jwtAuthSvc
+
+	opts := []grpc.ServerOption{
+		grpc.MaxMsgSize(1024 * 1024 * 8), // increase to 8 MB (default: 4 MB)
+	}
+	grpc_prometheus.EnableHandlingTimeHistogram()
+	opts = append(opts,
+		grpc.StatsHandler(&ocgrpc.ServerHandler{}),
+		grpc.StreamInterceptor(grpc_prometheus.StreamServerInterceptor),
+		grpc.UnaryInterceptor(grpc_prometheus.UnaryServerInterceptor),
+	)
+	recoveryFunc := func(p interface{}) (err error) {
+		return status.Errorf(codes.Unknown, "panic triggered: %v", p)
+	}
+	recoveryOpts := []grpc_recovery.Option{
+		grpc_recovery.WithRecoveryHandler(recoveryFunc),
+	}
+	opts = append(opts, grpc_middleware.WithUnaryServerChain(
+		grpc_recovery.UnaryServerInterceptor(recoveryOpts...),
+	), grpc_middleware.WithStreamServerChain(
+		grpc_recovery.StreamServerInterceptor(recoveryOpts...),
+	))
+
+	srv.s = grpc.NewServer(opts...)
+	pb.RegisterAuthServiceServer(srv.s, &Server{})
+	return &srv, nil
+}
+
+// Serve method starts the grpc server
+func (srv *Server) Serve(config *config.Config) error {
+	lis, err := net.Listen("tcp", "0.0.0.0:"+config.GRPCPort)
+	if err != nil {
+		return err
+	}
+	if err := srv.s.Serve(lis); err != nil {
+		return err
+	}
+	return nil
+}
