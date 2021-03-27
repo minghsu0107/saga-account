@@ -49,6 +49,8 @@ steps:
   commands:
   - go mod download
   - make test
+  depends_on:
+    - pingdb
 - name: push-registry
   <<: *x-build-docker-image
   settings:
