@@ -4,6 +4,7 @@ package model
 type Customer struct {
 	ID           uint64
 	Active       bool
+	Password     string
 	PersonalInfo *CustomerPersonalInfo
 	ShippingInfo *CustomerShippingInfo
 }

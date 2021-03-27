@@ -19,5 +19,5 @@ func NewMigrator(db *gorm.DB) *Migrator {
 
 // Migrate method migrates db schemas
 func (m *Migrator) Migrate() error {
-	return m.db.AutoMigrate(&model.Consumer{})
+	return m.db.AutoMigrate(&model.Customer{})
 }

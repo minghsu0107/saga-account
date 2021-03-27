@@ -6,7 +6,6 @@ import (
 
 // CustomerService defines customer data related interface
 type CustomerService interface {
-	CreateCustomer(customer *model.Customer) error
 	GetCustomerPersonalInfo(customerID uint64) *model.CustomerPersonalInfo
 	GetCustomerShippingInfo(customerID uint64) *model.CustomerShippingInfo
 	UpdateCustomerPersonalInfo(customerID uint64) error

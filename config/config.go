@@ -9,13 +9,20 @@ import (
 
 // Config is a type for general configuration
 type Config struct {
-	HTTPPort  string    `yaml:"httpPort" envconfig:"HTTP_PORT"`
-	GRPCPort  string    `yaml:"grpcPort" envconfig:"GRPC_PORT"`
-	AppName   string    `yaml:"appName" envconfig:"APP_NAME"`
-	GinMode   string    `yaml:"ginMode" envconfig:"GIN_MODE"`
-	JWTSecret string    `yaml:"jwtSecret" envconfig:"JWT_SECRET"`
-	DBConfig  *DBConfig `yaml:"dbConfig"`
+	HTTPPort  string     `yaml:"httpPort" envconfig:"HTTP_PORT"`
+	GRPCPort  string     `yaml:"grpcPort" envconfig:"GRPC_PORT"`
+	AppName   string     `yaml:"appName" envconfig:"APP_NAME"`
+	GinMode   string     `yaml:"ginMode" envconfig:"GIN_MODE"`
+	JWTConfig *JWTConfig `yaml:"jwtConfig"`
+	DBConfig  *DBConfig  `yaml:"dbConfig"`
 	Logger    *Logger
+}
+
+// JWTConfig is the type for jwt config
+type JWTConfig struct {
+	Secret                   string `yaml:"secret" envconfig:"JWT_SECRET"`
+	AccessTokenExpireSecond  int64  `yaml:"accessTokenExpireSecond" envconfig:"JWT_ACCESS_TOKEN_EXPIRE_SECOND"`
+	RefreshTokenExpireSecond int64  `yaml:"refreshTokenExpireSecond" envconfig:"JWT_REFRESH_TOKEN_EXPIRE_SECOND"`
 }
 
 // DBConfig is the type for database config
