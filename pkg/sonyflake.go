@@ -6,7 +6,6 @@ import (
 	"github.com/sony/sonyflake"
 )
 
-// NewSonyFlake is the factory of sonyflake instance
 func NewSonyFlake() (*sonyflake.Sonyflake, error) {
 	var st sonyflake.Settings
 	sf := sonyflake.NewSonyflake(st)

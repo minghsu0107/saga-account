@@ -3,6 +3,7 @@ module github.com/minghsu0107/saga-account
 go 1.15
 
 require (
+	bou.ke/monkey v1.0.2
 	contrib.go.opencensus.io/exporter/ocagent v0.7.0
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gin-gonic/gin v1.6.3 // indirect

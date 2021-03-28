@@ -9,6 +9,7 @@ import (
 	"github.com/minghsu0107/saga-account/config"
 	"github.com/minghsu0107/saga-account/infra/db"
 	"github.com/minghsu0107/saga-account/infra/grpc"
+	"github.com/minghsu0107/saga-account/pkg"
 	"github.com/minghsu0107/saga-account/repo"
 	"github.com/minghsu0107/saga-account/service/auth"
 )
@@ -25,7 +26,11 @@ func InitializeGRPCServer() (*grpc.Server, error) {
 		return nil, err
 	}
 	jwtAuthRepository := repo.NewJWTAuthRepository(gormDB)
-	jwtAuthService := auth.NewJWTAuthService(configConfig, jwtAuthRepository)
+	sonyflake, err := pkg.NewSonyFlake()
+	if err != nil {
+		return nil, err
+	}
+	jwtAuthService := auth.NewJWTAuthService(configConfig, jwtAuthRepository, sonyflake)
 	server, err := grpc.NewGRPCServer(jwtAuthService)
 	if err != nil {
 		return nil, err

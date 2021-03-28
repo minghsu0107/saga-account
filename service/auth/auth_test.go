@@ -22,8 +22,17 @@ var (
 	mockCtrl        *gomock.Controller
 	mockJWTAuthRepo *mock_repo.MockJWTAuthRepository
 	authSvc         JWTAuthService
-	testJWTSecret   = "testsecretkey"
+	testCustomerID  uint64 = 347951634795465221
+	testJWTSecret          = "testsecretkey"
 )
+
+type TestIDGenerator struct {
+	testCustomerID uint64
+}
+
+func (g TestIDGenerator) NextID() (uint64, error) {
+	return g.testCustomerID, nil
+}
 
 func TestAuth(t *testing.T) {
 	mockCtrl = gomock.NewController(t)
@@ -47,7 +56,10 @@ func NewTestJWTAuthService() JWTAuthService {
 			}),
 		},
 	}
-	return NewJWTAuthService(config, mockJWTAuthRepo)
+	testSf := TestIDGenerator{
+		testCustomerID: testCustomerID,
+	}
+	return NewJWTAuthService(config, mockJWTAuthRepo, testSf)
 }
 
 var _ = BeforeSuite(func() {
@@ -63,7 +75,7 @@ var _ = Describe("authentication", func() {
 	var customerID uint64
 	var authPayload model.AuthPayload
 	BeforeEach(func() {
-		customerID = 1
+		customerID = testCustomerID
 	})
 	var _ = When("token is valid", func() {
 		BeforeEach(func() {
@@ -174,6 +186,7 @@ var _ = Describe("authentication", func() {
 			})
 		})
 	})
+
 	var _ = When("signing up", func() {
 		var customer model.Customer
 		BeforeEach(func() {
@@ -182,7 +195,7 @@ var _ = Describe("authentication", func() {
 		It("should create a new customer successfully", func() {
 			mockJWTAuthRepo.EXPECT().
 				CreateCustomer(&customer).Return(nil)
-			accessToken, refreshToken, err := authSvc.SignUp(&customer)
+			accessToken, refreshToken, err := authSvc.SignUp(&model.Customer{})
 			Expect(err).To(BeNil())
 
 			authPayload.AccessToken = accessToken
@@ -210,7 +223,7 @@ var _ = Describe("authentication", func() {
 		It("should get error when inserting duplicate entry", func() {
 			mockJWTAuthRepo.EXPECT().
 				CreateCustomer(&customer).Return(repo.ErrDuplicateEntry)
-			_, _, err := authSvc.SignUp(&customer)
+			_, _, err := authSvc.SignUp(&model.Customer{})
 			Expect(err).To(HaveOccurred())
 		})
 	})

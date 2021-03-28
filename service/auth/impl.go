@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/minghsu0107/saga-account/pkg"
-
 	"github.com/minghsu0107/saga-account/repo"
 
 	"github.com/dgrijalva/jwt-go"
@@ -20,16 +19,23 @@ type JWTAuthServiceImpl struct {
 	accessTokenExpireSecond  int64
 	refreshTokenExpireSecond int64
 	jwtAuthRepo              repo.JWTAuthRepository
+	sf                       IDGenerator
 	logger                   *log.Entry
 }
 
+// IDGenerator is the inteface for generatring unique ID
+type IDGenerator interface {
+	NextID() (uint64, error)
+}
+
 // NewJWTAuthService is the factory of JWTAuthService
-func NewJWTAuthService(config *conf.Config, jwtAuthRepo repo.JWTAuthRepository) JWTAuthService {
+func NewJWTAuthService(config *conf.Config, jwtAuthRepo repo.JWTAuthRepository, sf IDGenerator) JWTAuthService {
 	return &JWTAuthServiceImpl{
 		jwtSecret:                config.JWTConfig.Secret,
 		accessTokenExpireSecond:  config.JWTConfig.AccessTokenExpireSecond,
 		refreshTokenExpireSecond: config.JWTConfig.RefreshTokenExpireSecond,
 		jwtAuthRepo:              jwtAuthRepo,
+		sf:                       sf,
 		logger: config.Logger.ContextLogger.WithFields(log.Fields{
 			"type": "service:JWTAuthService",
 		}),
@@ -77,6 +83,11 @@ func (svc *JWTAuthServiceImpl) Auth(authPayload *model.AuthPayload) (*model.Auth
 
 // SignUp creates a new customer and returns a token pair
 func (svc *JWTAuthServiceImpl) SignUp(customer *model.Customer) (string, string, error) {
+	sonyflakeID, err := svc.sf.NextID()
+	if err != nil {
+		return "", "", err
+	}
+	customer.ID = sonyflakeID
 	if err := svc.jwtAuthRepo.CreateCustomer(customer); err != nil {
 		if err != repo.ErrDuplicateEntry {
 			svc.logger.Error(err)

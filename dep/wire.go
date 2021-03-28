@@ -8,6 +8,7 @@ import (
 	conf "github.com/minghsu0107/saga-account/config"
 	"github.com/minghsu0107/saga-account/infra/db"
 	"github.com/minghsu0107/saga-account/infra/grpc"
+	"github.com/minghsu0107/saga-account/pkg"
 	"github.com/minghsu0107/saga-account/repo"
 	"github.com/minghsu0107/saga-account/service/auth"
 )
@@ -16,6 +17,7 @@ func InitializeGRPCServer() (*grpc.Server, error) {
 	wire.Build(
 		conf.NewConfig,
 		grpc.NewGRPCServer,
+		pkg.NewSonyFlake,
 		auth.NewJWTAuthService,
 		repo.NewJWTAuthRepository,
 		db.NewDatabaseConnection,

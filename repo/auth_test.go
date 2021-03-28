@@ -18,12 +18,14 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
+	"github.com/sony/sonyflake"
 	"gorm.io/gorm"
 )
 
 var (
 	authRepo JWTAuthRepository
 	db       *gorm.DB
+	sf       *sonyflake.Sonyflake
 )
 
 func TestAuth(t *testing.T) {
@@ -80,8 +82,17 @@ var _ = AfterSuite(func() {
 })
 
 var _ = Describe("auth repo", func() {
+	var err error
+	sf, err = pkg.NewSonyFlake()
+	if err != nil {
+		panic(err)
+	}
+	id, err := sf.NextID()
+	if err != nil {
+		panic(err)
+	}
 	customer := domain_model.Customer{
-		ID:     1,
+		ID:     id,
 		Active: true,
 		PersonalInfo: &domain_model.CustomerPersonalInfo{
 			FirstName: "ming",
@@ -109,7 +120,11 @@ var _ = Describe("auth repo", func() {
 		Expect(active).To(Equal(customer.Active))
 	})
 	var _ = It("should check non-existent customer", func() {
-		exist, active, err := authRepo.CheckCustomer(999)
+		nonExistID, err := sf.NextID()
+		if err != nil {
+			panic(err)
+		}
+		exist, active, err := authRepo.CheckCustomer(nonExistID)
 		Expect(err).To(BeNil())
 		Expect(exist).To(Equal(false))
 		Expect(active).To(Equal(false))
