@@ -19,17 +19,12 @@ type JWTAuthServiceImpl struct {
 	accessTokenExpireSecond  int64
 	refreshTokenExpireSecond int64
 	jwtAuthRepo              repo.JWTAuthRepository
-	sf                       IDGenerator
+	sf                       pkg.IDGenerator
 	logger                   *log.Entry
 }
 
-// IDGenerator is the inteface for generatring unique ID
-type IDGenerator interface {
-	NextID() (uint64, error)
-}
-
 // NewJWTAuthService is the factory of JWTAuthService
-func NewJWTAuthService(config *conf.Config, jwtAuthRepo repo.JWTAuthRepository, sf IDGenerator) JWTAuthService {
+func NewJWTAuthService(config *conf.Config, jwtAuthRepo repo.JWTAuthRepository, sf pkg.IDGenerator) JWTAuthService {
 	return &JWTAuthServiceImpl{
 		jwtSecret:                config.JWTConfig.Secret,
 		accessTokenExpireSecond:  config.JWTConfig.AccessTokenExpireSecond,

@@ -6,7 +6,12 @@ import (
 	"github.com/sony/sonyflake"
 )
 
-func NewSonyFlake() (*sonyflake.Sonyflake, error) {
+// IDGenerator is the inteface for generatring unique ID
+type IDGenerator interface {
+	NextID() (uint64, error)
+}
+
+func NewSonyFlake() (IDGenerator, error) {
 	var st sonyflake.Settings
 	sf := sonyflake.NewSonyflake(st)
 	if sf == nil {

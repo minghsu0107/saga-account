@@ -18,14 +18,13 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
-	"github.com/sony/sonyflake"
 	"gorm.io/gorm"
 )
 
 var (
 	authRepo JWTAuthRepository
 	db       *gorm.DB
-	sf       *sonyflake.Sonyflake
+	sf       pkg.IDGenerator
 )
 
 func TestAuth(t *testing.T) {

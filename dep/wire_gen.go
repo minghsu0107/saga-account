@@ -26,11 +26,11 @@ func InitializeGRPCServer() (*grpc.Server, error) {
 		return nil, err
 	}
 	jwtAuthRepository := repo.NewJWTAuthRepository(gormDB)
-	sonyflake, err := pkg.NewSonyFlake()
+	idGenerator, err := pkg.NewSonyFlake()
 	if err != nil {
 		return nil, err
 	}
-	jwtAuthService := auth.NewJWTAuthService(configConfig, jwtAuthRepository, sonyflake)
+	jwtAuthService := auth.NewJWTAuthService(configConfig, jwtAuthRepository, idGenerator)
 	server, err := grpc.NewGRPCServer(jwtAuthService)
 	if err != nil {
 		return nil, err
