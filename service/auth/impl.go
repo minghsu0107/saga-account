@@ -97,7 +97,7 @@ func (svc *JWTAuthServiceImpl) Login(email string, password string) (string, str
 		return "", "", ErrAuthentication
 	}
 	if pkg.CheckPasswordHash(password, credentials.BcryptedPassword) {
-		return svc.newTokenPair(credentials.CustomerID)
+		return svc.newTokenPair(credentials.ID)
 	}
 	return "", "", ErrAuthentication
 }

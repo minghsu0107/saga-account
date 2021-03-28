@@ -3,8 +3,9 @@ package repo
 import (
 	"errors"
 
+	"github.com/minghsu0107/saga-account/pkg"
+
 	"github.com/go-sql-driver/mysql"
-	"github.com/minghsu0107/saga-account/config"
 	domain_model "github.com/minghsu0107/saga-account/domain/model"
 	"github.com/minghsu0107/saga-account/infra/db/model"
 	"gorm.io/gorm"
@@ -24,7 +25,7 @@ type JWTAuthRepositoryImpl struct {
 
 // CustomerCredentials encapsulates customer credentials
 type CustomerCredentials struct {
-	CustomerID       uint64
+	ID               uint64
 	Active           bool
 	BcryptedPassword string
 }
@@ -34,7 +35,7 @@ type customerCheckStatus struct {
 }
 
 // NewJWTAuthRepository is the factory of JWTAuthRepository
-func NewJWTAuthRepository(db *gorm.DB, config *config.Config) JWTAuthRepository {
+func NewJWTAuthRepository(db *gorm.DB) JWTAuthRepository {
 	return &JWTAuthRepositoryImpl{
 		db: db,
 	}
@@ -56,15 +57,19 @@ func (repo *JWTAuthRepositoryImpl) CheckCustomer(customerID uint64) (bool, bool,
 // CreateCustomer creates a new customer
 // it returns error if ID, email, or phone number duplicates
 func (repo *JWTAuthRepositoryImpl) CreateCustomer(customer *domain_model.Customer) error {
+	bcryptedPassword, err := pkg.HashPassword(customer.Password)
+	if err != nil {
+		return err
+	}
 	if err := repo.db.Create(&model.Customer{
-		ID:          customer.ID,
-		Active:      customer.Active,
-		FirstName:   customer.PersonalInfo.FirstName,
-		LastName:    customer.PersonalInfo.LastName,
-		Email:       customer.PersonalInfo.Email,
-		Address:     customer.ShippingInfo.Address,
-		PhoneNumber: customer.ShippingInfo.PhoneNumber,
-		Password:    customer.Password,
+		ID:               customer.ID,
+		Active:           customer.Active,
+		FirstName:        customer.PersonalInfo.FirstName,
+		LastName:         customer.PersonalInfo.LastName,
+		Email:            customer.PersonalInfo.Email,
+		Address:          customer.ShippingInfo.Address,
+		PhoneNumber:      customer.ShippingInfo.PhoneNumber,
+		BcryptedPassword: bcryptedPassword,
 	}).Error; err != nil {
 		var mysqlErr *mysql.MySQLError
 		if errors.As(err, &mysqlErr) && mysqlErr.Number == 1062 {
@@ -78,7 +83,7 @@ func (repo *JWTAuthRepositoryImpl) CreateCustomer(customer *domain_model.Custome
 // GetCustomerCredentials finds customer credentials by customer id
 func (repo *JWTAuthRepositoryImpl) GetCustomerCredentials(email string) (bool, *CustomerCredentials, error) {
 	var credentials CustomerCredentials
-	if err := repo.db.Model(&model.Customer{}).Select("id", "active", "password").
+	if err := repo.db.Model(&model.Customer{}).Select("id", "active", "bcrypted_password").
 		Where("email = ?", email).First(&credentials).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return false, nil, nil

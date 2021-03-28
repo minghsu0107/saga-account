@@ -226,7 +226,7 @@ var _ = Describe("authentication", func() {
 		It("should login a customer succesfully", func() {
 			mockJWTAuthRepo.EXPECT().
 				GetCustomerCredentials(email).Return(true, &repo.CustomerCredentials{
-				CustomerID:       customerID,
+				ID:               customerID,
 				Active:           true,
 				BcryptedPassword: bcryptedPassword,
 			}, nil)
@@ -265,7 +265,7 @@ var _ = Describe("authentication", func() {
 			When("customer is not active", func() {
 				mockJWTAuthRepo.EXPECT().
 					GetCustomerCredentials(email).Return(true, &repo.CustomerCredentials{
-					CustomerID:       customerID,
+					ID:               customerID,
 					Active:           false,
 					BcryptedPassword: bcryptedPassword,
 				}, nil)
@@ -275,7 +275,7 @@ var _ = Describe("authentication", func() {
 			When("enter wrong password", func() {
 				mockJWTAuthRepo.EXPECT().
 					GetCustomerCredentials(email).Return(true, &repo.CustomerCredentials{
-					CustomerID:       customerID,
+					ID:               customerID,
 					Active:           true,
 					BcryptedPassword: bcryptedPassword,
 				}, nil)

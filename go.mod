@@ -18,6 +18,7 @@ require (
 	github.com/onsi/gomega v1.4.3
 	github.com/prometheus/client_golang v1.10.0
 	github.com/sirupsen/logrus v1.8.1
+	github.com/sony/sonyflake v1.0.0
 	go.opencensus.io v0.22.3
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
 	golang.org/x/mod v0.4.2 // indirect
