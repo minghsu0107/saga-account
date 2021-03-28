@@ -22,7 +22,7 @@ require (
 	go.opencensus.io v0.22.3
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
 	golang.org/x/mod v0.4.2 // indirect
-	golang.org/x/sys v0.0.0-20210324051608-47abb6519492 // indirect
+	golang.org/x/sys v0.0.0-20210326220804-49726bf1d181 // indirect
 	golang.org/x/tools v0.1.0 // indirect
 	google.golang.org/grpc v1.36.0
 	gopkg.in/yaml.v2 v2.4.0

@@ -24,7 +24,7 @@ func InitializeGRPCServer() (*grpc.Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	jwtAuthRepository := repo.NewJWTAuthRepository(gormDB, configConfig)
+	jwtAuthRepository := repo.NewJWTAuthRepository(gormDB)
 	jwtAuthService := auth.NewJWTAuthService(configConfig, jwtAuthRepository)
 	server, err := grpc.NewGRPCServer(jwtAuthService)
 	if err != nil {
