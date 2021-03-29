@@ -39,7 +39,7 @@ func InitializeServer() (*infra.Server, error) {
 	customerService := account.NewCustomerService(configConfig, customerRepository)
 	router := http.NewRouter(jwtAuthService, customerService)
 	server := http.NewServer(configConfig, engine, router)
-	grpcServer, err := grpc.NewGRPCServer(jwtAuthService)
+	grpcServer, err := grpc.NewGRPCServer(configConfig, jwtAuthService)
 	if err != nil {
 		return nil, err
 	}

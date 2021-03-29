@@ -18,17 +18,20 @@ import (
 
 // Server is the grpc server type
 type Server struct {
+	Port       string
 	s          *grpc.Server
 	jwtAuthSvc auth.JWTAuthService
 }
 
 // NewGRPCServer is the factory of grpc server
-func NewGRPCServer(jwtAuthSvc auth.JWTAuthService) (*Server, error) {
-	var srv Server
-	srv.jwtAuthSvc = jwtAuthSvc
+func NewGRPCServer(config *config.Config, jwtAuthSvc auth.JWTAuthService) (*Server, error) {
+	srv := &Server{
+		Port:       config.GRPCPort,
+		jwtAuthSvc: jwtAuthSvc,
+	}
 
 	opts := []grpc.ServerOption{
-		grpc.MaxMsgSize(1024 * 1024 * 8), // increase to 8 MB (default: 4 MB)
+		grpc.MaxRecvMsgSize(1024 * 1024 * 8), // increase to 8 MB (default: 4 MB)
 	}
 	grpc_prometheus.EnableHandlingTimeHistogram()
 	opts = append(opts,
@@ -50,12 +53,12 @@ func NewGRPCServer(jwtAuthSvc auth.JWTAuthService) (*Server, error) {
 
 	srv.s = grpc.NewServer(opts...)
 	pb.RegisterAuthServiceServer(srv.s, &Server{})
-	return &srv, nil
+	return srv, nil
 }
 
-// Serve method starts the grpc server
-func (srv *Server) Serve(config *config.Config) error {
-	lis, err := net.Listen("tcp", "0.0.0.0:"+config.GRPCPort)
+// Run method starts the grpc server
+func (srv *Server) Run() error {
+	lis, err := net.Listen("tcp", "0.0.0.0:"+srv.Port)
 	if err != nil {
 		return err
 	}
