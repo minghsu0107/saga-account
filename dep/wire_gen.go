@@ -7,20 +7,24 @@ package dep
 
 import (
 	"github.com/minghsu0107/saga-account/config"
+	"github.com/minghsu0107/saga-account/infra"
 	"github.com/minghsu0107/saga-account/infra/db"
 	"github.com/minghsu0107/saga-account/infra/grpc"
+	"github.com/minghsu0107/saga-account/infra/http"
 	"github.com/minghsu0107/saga-account/pkg"
 	"github.com/minghsu0107/saga-account/repo"
+	"github.com/minghsu0107/saga-account/service/account"
 	"github.com/minghsu0107/saga-account/service/auth"
 )
 
 // Injectors from wire.go:
 
-func InitializeGRPCServer() (*grpc.Server, error) {
+func InitializeServer() (*infra.Server, error) {
 	configConfig, err := config.NewConfig()
 	if err != nil {
 		return nil, err
 	}
+	engine := http.NewEngine(configConfig)
 	gormDB, err := db.NewDatabaseConnection(configConfig)
 	if err != nil {
 		return nil, err
@@ -31,11 +35,16 @@ func InitializeGRPCServer() (*grpc.Server, error) {
 		return nil, err
 	}
 	jwtAuthService := auth.NewJWTAuthService(configConfig, jwtAuthRepository, idGenerator)
-	server, err := grpc.NewGRPCServer(jwtAuthService)
+	customerRepository := repo.NewCustomerRepository(gormDB)
+	customerService := account.NewCustomerService(configConfig, customerRepository)
+	router := http.NewRouter(jwtAuthService, customerService)
+	server := http.NewServer(configConfig, engine, router)
+	grpcServer, err := grpc.NewGRPCServer(jwtAuthService)
 	if err != nil {
 		return nil, err
 	}
-	return server, nil
+	infraServer := infra.NewServer(server, grpcServer)
+	return infraServer, nil
 }
 
 func InitializeMigrator() (*db.Migrator, error) {

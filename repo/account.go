@@ -1,23 +1,65 @@
 package repo
 
 import (
-	"github.com/minghsu0107/saga-account/config"
+	"errors"
+
+	"github.com/minghsu0107/saga-account/infra/db/model"
 	"gorm.io/gorm"
 )
 
-// AccountRepository is the account repository interface
-type AccountRepository interface {
-	//CreateCustomer()
+// CustomerRepository is the customer repository interface
+type CustomerRepository interface {
+	GetCustomerPersonalInfo(customerID uint64) (*CustomerPersonalInfo, error)
+	GetCustomerShippingInfo(customerID uint64) (*CustomerShippingInfo, error)
 }
 
-// AccountRepositoryImpl implements AccountRepository interface
-type AccountRepositoryImpl struct {
+// CustomerRepositoryImpl implements CustomerRepository interface
+type CustomerRepositoryImpl struct {
 	db *gorm.DB
 }
 
-// NewAccountRepository is the factory of AccountRepository
-func NewAccountRepository(db *gorm.DB, config *config.Config) AccountRepository {
-	return &AccountRepositoryImpl{
+// CustomerPersonalInfo os customer personal info type
+type CustomerPersonalInfo struct {
+	FirstName string
+	LastName  string
+	Email     string
+}
+
+// CustomerShippingInfo os customer shipping info type
+type CustomerShippingInfo struct {
+	Address     string
+	PhoneNumber string
+}
+
+// NewCustomerRepository is the factory of CustomerRepository
+func NewCustomerRepository(db *gorm.DB) CustomerRepository {
+	return &CustomerRepositoryImpl{
 		db: db,
 	}
+}
+
+// GetCustomerPersonalInfo queries customer personal info by customer id
+func (repo *CustomerRepositoryImpl) GetCustomerPersonalInfo(customerID uint64) (*CustomerPersonalInfo, error) {
+	var info CustomerPersonalInfo
+	if err := repo.db.Model(&model.Customer{}).Select("first_name", "last_name", "email").
+		Where("id = ?", customerID).First(&info).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrCustomerNotFound
+		}
+		return nil, err
+	}
+	return &info, nil
+}
+
+// GetCustomerShippingInfo queries customer shipping info by customer id
+func (repo *CustomerRepositoryImpl) GetCustomerShippingInfo(customerID uint64) (*CustomerShippingInfo, error) {
+	var info CustomerShippingInfo
+	if err := repo.db.Model(&model.Customer{}).Select("address", "phone_number").
+		Where("id = ?", customerID).First(&info).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrCustomerNotFound
+		}
+		return nil, err
+	}
+	return &info, nil
 }

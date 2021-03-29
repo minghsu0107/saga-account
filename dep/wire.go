@@ -6,23 +6,36 @@ package dep
 import (
 	"github.com/google/wire"
 	conf "github.com/minghsu0107/saga-account/config"
+	"github.com/minghsu0107/saga-account/infra"
 	"github.com/minghsu0107/saga-account/infra/db"
-	"github.com/minghsu0107/saga-account/infra/grpc"
+	infra_grpc "github.com/minghsu0107/saga-account/infra/grpc"
+	infra_http "github.com/minghsu0107/saga-account/infra/http"
 	"github.com/minghsu0107/saga-account/pkg"
 	"github.com/minghsu0107/saga-account/repo"
+	"github.com/minghsu0107/saga-account/service/account"
 	"github.com/minghsu0107/saga-account/service/auth"
 )
 
-func InitializeGRPCServer() (*grpc.Server, error) {
+func InitializeServer() (*infra.Server, error) {
 	wire.Build(
+		infra.NewServer,
 		conf.NewConfig,
-		grpc.NewGRPCServer,
-		pkg.NewSonyFlake,
-		auth.NewJWTAuthService,
-		repo.NewJWTAuthRepository,
+
+		infra_http.NewServer,
+		infra_http.NewEngine,
+		infra_http.NewRouter,
+		infra_grpc.NewGRPCServer,
 		db.NewDatabaseConnection,
+
+		pkg.NewSonyFlake,
+
+		auth.NewJWTAuthService,
+		account.NewCustomerService,
+
+		repo.NewJWTAuthRepository,
+		repo.NewCustomerRepository,
 	)
-	return &grpc.Server{}, nil
+	return &infra.Server{}, nil
 }
 
 func InitializeMigrator() (*db.Migrator, error) {
