@@ -41,7 +41,7 @@ func NewJWTAuthService(config *conf.Config, jwtAuthRepo repo.JWTAuthRepository, 
 func (svc *JWTAuthServiceImpl) Auth(authPayload *model.AuthPayload) (*model.AuthResponse, error) {
 	token, err := jwt.ParseWithClaims(authPayload.AccessToken, &model.JWTClaims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
 		return []byte(svc.jwtSecret), nil
 	})
