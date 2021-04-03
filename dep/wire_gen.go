@@ -8,11 +8,13 @@ package dep
 import (
 	"github.com/minghsu0107/saga-account/config"
 	"github.com/minghsu0107/saga-account/infra"
+	"github.com/minghsu0107/saga-account/infra/cache"
 	"github.com/minghsu0107/saga-account/infra/db"
 	"github.com/minghsu0107/saga-account/infra/grpc"
 	"github.com/minghsu0107/saga-account/infra/http"
 	"github.com/minghsu0107/saga-account/pkg"
 	"github.com/minghsu0107/saga-account/repo"
+	"github.com/minghsu0107/saga-account/repo/proxy"
 	"github.com/minghsu0107/saga-account/service/account"
 	"github.com/minghsu0107/saga-account/service/auth"
 )
@@ -36,14 +38,25 @@ func InitializeServer() (*infra.Server, error) {
 	}
 	jwtAuthService := auth.NewJWTAuthService(configConfig, jwtAuthRepository, idGenerator)
 	customerRepository := repo.NewCustomerRepository(gormDB)
-	customerService := account.NewCustomerService(configConfig, customerRepository)
+	localCache, err := cache.NewLocalCache(configConfig)
+	if err != nil {
+		return nil, err
+	}
+	clusterClient, err := cache.NewRedisClient(configConfig)
+	if err != nil {
+		return nil, err
+	}
+	redisCache := cache.NewRedisCache(configConfig, clusterClient)
+	customerRepoCache := proxy.NewCustomerRepoCache(customerRepository, localCache, redisCache)
+	customerService := account.NewCustomerService(configConfig, customerRepoCache)
 	router := http.NewRouter(jwtAuthService, customerService)
 	server := http.NewServer(configConfig, engine, router)
 	grpcServer, err := grpc.NewGRPCServer(configConfig, jwtAuthService)
 	if err != nil {
 		return nil, err
 	}
-	infraServer := infra.NewServer(server, grpcServer)
+	localCacheCleaner := cache.NewLocalCacheCleaner(clusterClient, localCache)
+	infraServer := infra.NewServer(server, grpcServer, localCacheCleaner)
 	return infraServer, nil
 }
 

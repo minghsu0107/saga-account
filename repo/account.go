@@ -3,6 +3,7 @@ package repo
 import (
 	"errors"
 
+	domain_model "github.com/minghsu0107/saga-account/domain/model"
 	"github.com/minghsu0107/saga-account/infra/db/model"
 	"gorm.io/gorm"
 )
@@ -11,6 +12,7 @@ import (
 type CustomerRepository interface {
 	GetCustomerPersonalInfo(customerID uint64) (*CustomerPersonalInfo, error)
 	GetCustomerShippingInfo(customerID uint64) (*CustomerShippingInfo, error)
+	UpdateCustomerInfo(customerID uint64, personalInfo *domain_model.CustomerPersonalInfo, shippingInfo *domain_model.CustomerShippingInfo) error
 }
 
 // CustomerRepositoryImpl implements CustomerRepository interface
@@ -62,4 +64,19 @@ func (repo *CustomerRepositoryImpl) GetCustomerShippingInfo(customerID uint64) (
 		return nil, err
 	}
 	return &info, nil
+}
+
+// UpdateCustomerInfo updates a customer's personal and/or shipping info
+func (repo *CustomerRepositoryImpl) UpdateCustomerInfo(customerID uint64, personalInfo *domain_model.CustomerPersonalInfo, shippingInfo *domain_model.CustomerShippingInfo) error {
+	if err := repo.db.Model(&model.Customer{}).Where("id = ?", customerID).
+		Updates(model.Customer{
+			FirstName:   personalInfo.FirstName,
+			LastName:    personalInfo.LastName,
+			Email:       personalInfo.Email,
+			Address:     shippingInfo.Address,
+			PhoneNumber: shippingInfo.PhoneNumber,
+		}).Error; err != nil {
+		return err
+	}
+	return nil
 }

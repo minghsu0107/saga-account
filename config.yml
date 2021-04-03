@@ -10,3 +10,14 @@ dbConfig:
   dsn: root:password@tcp(127.0.0.1:3306)/account?charset=utf8mb4&parseTime=True&loc=Local
   maxIdleConns: 3
   maxOpenConns: 10
+localCacheConfig:
+  expirationSeconds: 600
+redisConfig:
+  addr: ""
+  password: ""
+  db: 0
+  poolSize: 10
+  maxRetries: 3
+  expirationSeconds: 900
+  idleTimeoutSeconds: 30
+  

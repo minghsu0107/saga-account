@@ -15,6 +15,7 @@ build-linux: dep
 
 pretest: mockgen
 	$(shell $(GOCMD) env GOPATH)/bin/mockgen -source=repo/auth.go -destination=mock/repo/auth.go -package=mock_repo
+	$(shell $(GOCMD) env GOPATH)/bin/mockgen -source=repo/account.go -destination=mock/repo/account.go -package=mock_repo
 	$(shell $(GOCMD) env GOPATH)/bin/mockgen -source=service/account/interface.go -destination=mock/service/account.go -package=mock_service
 	$(shell $(GOCMD) env GOPATH)/bin/mockgen -source=service/auth/interface.go -destination=mock/service/auth.go -package=mock_service
 runtest:

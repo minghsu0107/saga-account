@@ -9,30 +9,48 @@ import (
 
 // Config is a type for general configuration
 type Config struct {
-	HTTPPort  string     `yaml:"httpPort" envconfig:"HTTP_PORT"`
-	GRPCPort  string     `yaml:"grpcPort" envconfig:"GRPC_PORT"`
-	AppName   string     `yaml:"appName" envconfig:"APP_NAME"`
-	GinMode   string     `yaml:"ginMode" envconfig:"GIN_MODE"`
-	JWTConfig *JWTConfig `yaml:"jwtConfig"`
-	DBConfig  *DBConfig  `yaml:"dbConfig"`
-	Logger    *Logger
+	HTTPPort         string            `yaml:"httpPort" envconfig:"HTTP_PORT"`
+	GRPCPort         string            `yaml:"grpcPort" envconfig:"GRPC_PORT"`
+	AppName          string            `yaml:"appName" envconfig:"APP_NAME"`
+	GinMode          string            `yaml:"ginMode" envconfig:"GIN_MODE"`
+	JWTConfig        *JWTConfig        `yaml:"jwtConfig"`
+	DBConfig         *DBConfig         `yaml:"dbConfig"`
+	LocalCacheConfig *LocalCacheConfig `yaml:"localCacheConfig"`
+	RedisConfig      *RedisConfig      `yaml:"redisConfig"`
+	Logger           *Logger
 }
 
-// JWTConfig is the type for jwt config
+// JWTConfig is jwt config type
 type JWTConfig struct {
 	Secret                   string `yaml:"secret" envconfig:"JWT_SECRET"`
 	AccessTokenExpireSecond  int64  `yaml:"accessTokenExpireSecond" envconfig:"JWT_ACCESS_TOKEN_EXPIRE_SECOND"`
 	RefreshTokenExpireSecond int64  `yaml:"refreshTokenExpireSecond" envconfig:"JWT_REFRESH_TOKEN_EXPIRE_SECOND"`
 }
 
-// DBConfig is the type for database config
+// DBConfig is database config type
 type DBConfig struct {
 	Dsn          string `yaml:"dsn" envconfig:"DB_DSN"`
 	MaxIdleConns int    `yaml:"maxIdleConns" envconfig:"DB_MAX_IDLE_CONNS"`
 	MaxOpenConns int    `yaml:"maxOpenConns" envconfig:"DB_MAX_OPEN_CONNS"`
 }
 
-// NewConfig is a factory for Config instance
+// LocalCacheConfig defines cache related settings
+type LocalCacheConfig struct {
+	ExpirationSeconds int64 `yaml:"expirationSeconds" envconfig:"LOCAL_CACHE_EXPIRATION_SECONDS"`
+}
+
+// RedisConfig is redis config type
+type RedisConfig struct {
+	Addr               string `yaml:"addr" envconfig:"REDIS_ADDR"`
+	Password           string `yaml:"password" envconfig:"REDIS_PASSWORD"`
+	DB                 int    `yaml:"db" envconfig:"REDIS_DB"`
+	PoolSize           int    `yaml:"poolSize" envconfig:"REDIS_POOL_SIZE"`
+	MaxRetries         int    `yaml:"maxRetries" envconfig:"REDIS_MAX_RETRIES"`
+	ExpirationSeconds  int64  `yaml:"expirationSeconds" envconfig:"REDIS_EXPIRATION_SECONDS"`
+	IdleTimeoutSeconds int64  `yaml:"idleTimeoutSeconds" envconfig:"REDIS_IDLE_TIMEOUT_SECONDS"`
+}
+
+// NewConfig is the factory of Config instance
 func NewConfig() (*Config, error) {
 	var config Config
 	if err := readFile(&config); err != nil {

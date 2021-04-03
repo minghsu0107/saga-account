@@ -137,5 +137,30 @@ var _ = Describe("test repo", func() {
 			_, err = customerRepo.GetCustomerShippingInfo(nonExistID)
 			Expect(err).To(Equal(ErrCustomerNotFound))
 		})
+		var _ = It("should update customer info", func() {
+			personalInfo := domain_model.CustomerPersonalInfo{
+				FirstName: "dummy",
+				LastName:  "dummy",
+				Email:     "dummy@ming.com",
+			}
+			shippingInfo := domain_model.CustomerShippingInfo{
+				Address:     "dummy adress",
+				PhoneNumber: "dummy phone number",
+			}
+			err := customerRepo.UpdateCustomerInfo(customer.ID, &personalInfo, &shippingInfo)
+			Expect(err).To(BeNil())
+
+			curPersonalInfo, _ := customerRepo.GetCustomerPersonalInfo(customer.ID)
+			curShippingInfo, _ := customerRepo.GetCustomerShippingInfo(customer.ID)
+			Expect(&personalInfo).To(Equal(&domain_model.CustomerPersonalInfo{
+				FirstName: curPersonalInfo.FirstName,
+				LastName:  curPersonalInfo.LastName,
+				Email:     curPersonalInfo.Email,
+			}))
+			Expect(&shippingInfo).To(Equal(&domain_model.CustomerShippingInfo{
+				Address:     curShippingInfo.Address,
+				PhoneNumber: curShippingInfo.PhoneNumber,
+			}))
+		})
 	})
 })
