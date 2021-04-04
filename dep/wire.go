@@ -38,6 +38,7 @@ func InitializeServer() (*infra.Server, error) {
 		cache.NewLocalCacheCleaner,
 
 		proxy.NewCustomerRepoCache,
+		proxy.NewJWTAuthRepoCache,
 
 		pkg.NewSonyFlake,
 

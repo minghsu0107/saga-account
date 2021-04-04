@@ -24,6 +24,7 @@ func NewCustomerService(config *conf.Config, customerRepo proxy.CustomerRepoCach
 	}
 }
 
+// GetCustomerPersonalInfo gets customer personal info
 func (svc *CustomerServiceImpl) GetCustomerPersonalInfo(customerID uint64) (*model.CustomerPersonalInfo, error) {
 	info, err := svc.customerRepo.GetCustomerPersonalInfo(customerID)
 	if err != nil {
@@ -39,6 +40,7 @@ func (svc *CustomerServiceImpl) GetCustomerPersonalInfo(customerID uint64) (*mod
 	}, nil
 }
 
+// GetCustomerShippingInfo gets customer shipping info
 func (svc *CustomerServiceImpl) GetCustomerShippingInfo(customerID uint64) (*model.CustomerShippingInfo, error) {
 	info, err := svc.customerRepo.GetCustomerShippingInfo(customerID)
 	if err != nil {
@@ -53,6 +55,12 @@ func (svc *CustomerServiceImpl) GetCustomerShippingInfo(customerID uint64) (*mod
 	}, nil
 }
 
-func (svc *CustomerServiceImpl) UpdateCustomerInfo(customerID uint64, personalInfo *model.CustomerPersonalInfo, shippingInfo *model.CustomerShippingInfo) error {
-	return svc.customerRepo.UpdateCustomerInfo(customerID, personalInfo, shippingInfo)
+// UpdateCustomerPersonalInfo updates customer's personal info
+func (svc *CustomerServiceImpl) UpdateCustomerPersonalInfo(customerID uint64, personalInfo *model.CustomerPersonalInfo) error {
+	return svc.customerRepo.UpdateCustomerPersonalInfo(customerID, personalInfo)
+}
+
+// UpdateCustomerShippingInfo updates customer's shipping info
+func (svc *CustomerServiceImpl) UpdateCustomerShippingInfo(customerID uint64, shippingInfo *model.CustomerShippingInfo) error {
+	return svc.customerRepo.UpdateCustomerShippingInfo(customerID, shippingInfo)
 }

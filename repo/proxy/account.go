@@ -14,7 +14,8 @@ import (
 type CustomerRepoCache interface {
 	GetCustomerPersonalInfo(customerID uint64) (*repo.CustomerPersonalInfo, error)
 	GetCustomerShippingInfo(customerID uint64) (*repo.CustomerShippingInfo, error)
-	UpdateCustomerInfo(customerID uint64, personalInfo *model.CustomerPersonalInfo, shippingInfo *model.CustomerShippingInfo) error
+	UpdateCustomerPersonalInfo(customerID uint64, personalInfo *model.CustomerPersonalInfo) error
+	UpdateCustomerShippingInfo(customerID uint64, shippingInfo *model.CustomerShippingInfo) error
 }
 
 // CustomerRepoCacheImpl is the customer repo cache proxy
@@ -106,32 +107,33 @@ func (c *CustomerRepoCacheImpl) GetCustomerShippingInfo(customerID uint64) (*rep
 	return info, nil
 }
 
-func (c *CustomerRepoCacheImpl) UpdateCustomerInfo(customerID uint64, personalInfo *model.CustomerPersonalInfo, shippingInfo *model.CustomerShippingInfo) error {
+func (c *CustomerRepoCacheImpl) UpdateCustomerPersonalInfo(customerID uint64, personalInfo *model.CustomerPersonalInfo) error {
 	personalInfoKey := pkg.Join("cuspersonalinfo:", strconv.FormatUint(customerID, 10))
-	shippingInfoKey := pkg.Join("cusshippinginfo:", strconv.FormatUint(customerID, 10))
-	err := c.repo.UpdateCustomerInfo(customerID, personalInfo, shippingInfo)
+	err := c.repo.UpdateCustomerPersonalInfo(customerID, personalInfo)
 	if err != nil {
 		return err
 	}
 
-	cmds := []cache.RedisCmd{
-		{
-			OpType: cache.DELETE,
-			Payload: cache.RedisDeletePayload{
-				Key: personalInfoKey,
-			},
-		},
-		{
-			OpType: cache.DELETE,
-			Payload: cache.RedisDeletePayload{
-				Key: shippingInfoKey,
-			},
-		},
-	}
-	if err := c.rc.ExecPipeLine(&cmds); err != nil {
+	if err := c.rc.Delete(personalInfoKey); err != nil {
 		return err
 	}
-	if err := c.rc.Publish(config.InvalidationTopic, &[]string{personalInfoKey, shippingInfoKey}); err != nil {
+	if err := c.rc.Publish(config.InvalidationTopic, &[]string{personalInfoKey}); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *CustomerRepoCacheImpl) UpdateCustomerShippingInfo(customerID uint64, shippingInfo *model.CustomerShippingInfo) error {
+	shippingInfoKey := pkg.Join("cusshippinginfo:", strconv.FormatUint(customerID, 10))
+	err := c.repo.UpdateCustomerShippingInfo(customerID, shippingInfo)
+	if err != nil {
+		return err
+	}
+
+	if err := c.rc.Delete(shippingInfoKey); err != nil {
+		return err
+	}
+	if err := c.rc.Publish(config.InvalidationTopic, &[]string{shippingInfoKey}); err != nil {
 		return err
 	}
 	return nil

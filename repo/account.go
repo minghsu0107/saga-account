@@ -12,7 +12,8 @@ import (
 type CustomerRepository interface {
 	GetCustomerPersonalInfo(customerID uint64) (*CustomerPersonalInfo, error)
 	GetCustomerShippingInfo(customerID uint64) (*CustomerShippingInfo, error)
-	UpdateCustomerInfo(customerID uint64, personalInfo *domain_model.CustomerPersonalInfo, shippingInfo *domain_model.CustomerShippingInfo) error
+	UpdateCustomerPersonalInfo(customerID uint64, personalInfo *domain_model.CustomerPersonalInfo) error
+	UpdateCustomerShippingInfo(customerID uint64, shippingInfo *domain_model.CustomerShippingInfo) error
 }
 
 // CustomerRepositoryImpl implements CustomerRepository interface
@@ -66,13 +67,23 @@ func (repo *CustomerRepositoryImpl) GetCustomerShippingInfo(customerID uint64) (
 	return &info, nil
 }
 
-// UpdateCustomerInfo updates a customer's personal and/or shipping info
-func (repo *CustomerRepositoryImpl) UpdateCustomerInfo(customerID uint64, personalInfo *domain_model.CustomerPersonalInfo, shippingInfo *domain_model.CustomerShippingInfo) error {
+// UpdateCustomerInfo updates a customer's personal info
+func (repo *CustomerRepositoryImpl) UpdateCustomerPersonalInfo(customerID uint64, personalInfo *domain_model.CustomerPersonalInfo) error {
 	if err := repo.db.Model(&model.Customer{}).Where("id = ?", customerID).
 		Updates(model.Customer{
-			FirstName:   personalInfo.FirstName,
-			LastName:    personalInfo.LastName,
-			Email:       personalInfo.Email,
+			FirstName: personalInfo.FirstName,
+			LastName:  personalInfo.LastName,
+			Email:     personalInfo.Email,
+		}).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+// UpdateCustomerInfo updates a customer's shipping info
+func (repo *CustomerRepositoryImpl) UpdateCustomerShippingInfo(customerID uint64, shippingInfo *domain_model.CustomerShippingInfo) error {
+	if err := repo.db.Model(&model.Customer{}).Where("id = ?", customerID).
+		Updates(model.Customer{
 			Address:     shippingInfo.Address,
 			PhoneNumber: shippingInfo.PhoneNumber,
 		}).Error; err != nil {

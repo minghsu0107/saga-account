@@ -6,6 +6,7 @@ import (
 
 	"github.com/minghsu0107/saga-account/pkg"
 	"github.com/minghsu0107/saga-account/repo"
+	"github.com/minghsu0107/saga-account/repo/proxy"
 
 	"github.com/dgrijalva/jwt-go"
 	conf "github.com/minghsu0107/saga-account/config"
@@ -18,13 +19,13 @@ type JWTAuthServiceImpl struct {
 	jwtSecret                string
 	accessTokenExpireSecond  int64
 	refreshTokenExpireSecond int64
-	jwtAuthRepo              repo.JWTAuthRepository
+	jwtAuthRepo              proxy.JWTAuthRepoCache
 	sf                       pkg.IDGenerator
 	logger                   *log.Entry
 }
 
 // NewJWTAuthService is the factory of JWTAuthService
-func NewJWTAuthService(config *conf.Config, jwtAuthRepo repo.JWTAuthRepository, sf pkg.IDGenerator) JWTAuthService {
+func NewJWTAuthService(config *conf.Config, jwtAuthRepo proxy.JWTAuthRepoCache, sf pkg.IDGenerator) JWTAuthService {
 	return &JWTAuthServiceImpl{
 		jwtSecret:                config.JWTConfig.Secret,
 		accessTokenExpireSecond:  config.JWTConfig.AccessTokenExpireSecond,

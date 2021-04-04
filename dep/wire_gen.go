@@ -32,12 +32,6 @@ func InitializeServer() (*infra.Server, error) {
 		return nil, err
 	}
 	jwtAuthRepository := repo.NewJWTAuthRepository(gormDB)
-	idGenerator, err := pkg.NewSonyFlake()
-	if err != nil {
-		return nil, err
-	}
-	jwtAuthService := auth.NewJWTAuthService(configConfig, jwtAuthRepository, idGenerator)
-	customerRepository := repo.NewCustomerRepository(gormDB)
 	localCache, err := cache.NewLocalCache(configConfig)
 	if err != nil {
 		return nil, err
@@ -47,6 +41,13 @@ func InitializeServer() (*infra.Server, error) {
 		return nil, err
 	}
 	redisCache := cache.NewRedisCache(configConfig, clusterClient)
+	jwtAuthRepoCache := proxy.NewJWTAuthRepoCache(jwtAuthRepository, localCache, redisCache)
+	idGenerator, err := pkg.NewSonyFlake()
+	if err != nil {
+		return nil, err
+	}
+	jwtAuthService := auth.NewJWTAuthService(configConfig, jwtAuthRepoCache, idGenerator)
+	customerRepository := repo.NewCustomerRepository(gormDB)
 	customerRepoCache := proxy.NewCustomerRepoCache(customerRepository, localCache, redisCache)
 	customerService := account.NewCustomerService(configConfig, customerRepoCache)
 	router := http.NewRouter(jwtAuthService, customerService)
