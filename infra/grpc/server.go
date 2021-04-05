@@ -33,23 +33,27 @@ func NewGRPCServer(config *config.Config, jwtAuthSvc auth.JWTAuthService) (*Serv
 	opts := []grpc.ServerOption{
 		grpc.MaxRecvMsgSize(1024 * 1024 * 8), // increase to 8 MB (default: 4 MB)
 	}
+
 	grpc_prometheus.EnableHandlingTimeHistogram()
-	opts = append(opts,
-		grpc.StatsHandler(&ocgrpc.ServerHandler{}),
-		grpc.StreamInterceptor(grpc_prometheus.StreamServerInterceptor),
-		grpc.UnaryInterceptor(grpc_prometheus.UnaryServerInterceptor),
-	)
+
 	recoveryFunc := func(p interface{}) (err error) {
 		return status.Errorf(codes.Unknown, "panic triggered: %v", p)
 	}
 	recoveryOpts := []grpc_recovery.Option{
 		grpc_recovery.WithRecoveryHandler(recoveryFunc),
 	}
-	opts = append(opts, grpc_middleware.WithUnaryServerChain(
-		grpc_recovery.UnaryServerInterceptor(recoveryOpts...),
-	), grpc_middleware.WithStreamServerChain(
-		grpc_recovery.StreamServerInterceptor(recoveryOpts...),
-	))
+
+	opts = append(opts,
+		grpc.StatsHandler(&ocgrpc.ServerHandler{}),
+		grpc.StreamInterceptor(grpc_middleware.ChainStreamServer(
+			grpc_prometheus.StreamServerInterceptor,
+			grpc_recovery.StreamServerInterceptor(recoveryOpts...),
+		)),
+		grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(
+			grpc_prometheus.UnaryServerInterceptor,
+			grpc_recovery.UnaryServerInterceptor(recoveryOpts...),
+		)),
+	)
 
 	srv.s = grpc.NewServer(opts...)
 	pb.RegisterAuthServiceServer(srv.s, &Server{})
