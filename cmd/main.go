@@ -62,6 +62,7 @@ func main() {
 	}()
 
 	// catch shutdown
+	done := make(chan bool, 1)
 	go func() {
 		sig := make(chan os.Signal, 1)
 		signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
@@ -70,11 +71,14 @@ func main() {
 		// graceful shutdown
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
-		errs <- server.GracefulStop(ctx)
+		server.GracefulStop(ctx, done)
 	}()
 
 	err = <-errs
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	// wait for graceful shutdown
+	<-done
 }

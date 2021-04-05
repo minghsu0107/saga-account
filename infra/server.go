@@ -2,7 +2,6 @@ package infra
 
 import (
 	"context"
-	"fmt"
 
 	infra_cache "github.com/minghsu0107/saga-account/infra/cache"
 	infra_grpc "github.com/minghsu0107/saga-account/infra/grpc"
@@ -27,26 +26,39 @@ func NewServer(httpServer *infra_http.Server, grpcServer *infra_grpc.Server, cac
 
 // Run server
 func (s *Server) Run() error {
-	if err := s.HTTPServer.Run(); err != nil {
-		return err
-	}
-	if err := s.GRPCServer.Run(); err != nil {
-		return err
-	}
-	if err := s.CacheCleaner.SubscribeInvalidationEvent(); err != nil {
+	errs := make(chan error, 1)
+	go func() {
+		errs <- s.HTTPServer.Run()
+	}()
+	go func() {
+		errs <- s.GRPCServer.Run()
+	}()
+	go func() {
+		errs <- s.CacheCleaner.SubscribeInvalidationEvent()
+	}()
+	err := <-errs
+	if err != nil {
 		return err
 	}
 	return nil
 }
 
 // GracefulStop server
-func (s *Server) GracefulStop(ctx context.Context) error {
-	if err := s.HTTPServer.GracefulStop(ctx); err != nil {
-		return fmt.Errorf("error server shutdown: %v", err)
+func (s *Server) GracefulStop(ctx context.Context, done chan bool) {
+	errs := make(chan error, 1)
+	go func() {
+		errs <- s.HTTPServer.GracefulStop(ctx)
+	}()
+	go func() {
+		s.GRPCServer.GracefulStop()
+	}()
+	go func() {
+		s.CacheCleaner.Close()
+	}()
+	err := <-errs
+	if err != nil {
+		log.Error(err)
 	}
-	s.GRPCServer.GracefulStop()
-	s.CacheCleaner.Close()
-
 	log.Info("gracefully shutdowned")
-	return nil
+	done <- true
 }

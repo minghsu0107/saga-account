@@ -88,7 +88,7 @@ func (s *Server) Run() error {
 		Addr:    addr,
 		Handler: s.Engine,
 	}
-	log.Infoln("listening on ", addr)
+	log.Infoln("http server listening on ", addr)
 	err := s.svr.ListenAndServe()
 	if err != nil && err != http.ErrServerClosed {
 		return err

@@ -4,6 +4,7 @@ import (
 	"net"
 
 	"github.com/minghsu0107/saga-account/service/auth"
+	log "github.com/sirupsen/logrus"
 	"go.opencensus.io/plugin/ocgrpc"
 
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
@@ -62,7 +63,9 @@ func NewGRPCServer(config *config.Config, jwtAuthSvc auth.JWTAuthService) (*Serv
 
 // Run method starts the grpc server
 func (srv *Server) Run() error {
-	lis, err := net.Listen("tcp", "0.0.0.0:"+srv.Port)
+	addr := "0.0.0.0:" + srv.Port
+	log.Infoln("grpc server listening on ", addr)
+	lis, err := net.Listen("tcp", addr)
 	if err != nil {
 		return err
 	}
