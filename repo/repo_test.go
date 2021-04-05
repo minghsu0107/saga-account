@@ -70,7 +70,13 @@ var _ = Describe("test repo", func() {
 			Expect(err).To(BeNil())
 		})
 		var _ = It("should not insert duplicate customer", func() {
-			err := authRepo.CreateCustomer(&customer)
+			newID, err := sf.NextID()
+			if err != nil {
+				panic(err)
+			}
+			newCustomer := customer
+			newCustomer.ID = newID
+			err = authRepo.CreateCustomer(&newCustomer)
 			Expect(err).To(Equal(ErrDuplicateEntry))
 		})
 		var _ = It("should check customer", func() {
