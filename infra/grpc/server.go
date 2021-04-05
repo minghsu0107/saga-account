@@ -5,10 +5,12 @@ import (
 
 	"github.com/minghsu0107/saga-account/service/auth"
 	log "github.com/sirupsen/logrus"
+
 	"go.opencensus.io/plugin/ocgrpc"
 
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
+
 	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/minghsu0107/saga-account/config"
 	pb "github.com/minghsu0107/saga-pb"
@@ -20,17 +22,16 @@ import (
 // Server is the grpc server type
 type Server struct {
 	Port       string
-	s          *grpc.Server
 	jwtAuthSvc auth.JWTAuthService
+	s          *grpc.Server
 }
 
 // NewGRPCServer is the factory of grpc server
-func NewGRPCServer(config *config.Config, jwtAuthSvc auth.JWTAuthService) (*Server, error) {
+func NewGRPCServer(config *config.Config, jwtAuthSvc auth.JWTAuthService) *Server {
 	srv := &Server{
 		Port:       config.GRPCPort,
 		jwtAuthSvc: jwtAuthSvc,
 	}
-
 	opts := []grpc.ServerOption{
 		grpc.MaxRecvMsgSize(1024 * 1024 * 8), // increase to 8 MB (default: 4 MB)
 	}
@@ -55,10 +56,9 @@ func NewGRPCServer(config *config.Config, jwtAuthSvc auth.JWTAuthService) (*Serv
 			grpc_recovery.UnaryServerInterceptor(recoveryOpts...),
 		)),
 	)
-
 	srv.s = grpc.NewServer(opts...)
-	pb.RegisterAuthServiceServer(srv.s, &Server{})
-	return srv, nil
+	pb.RegisterAuthServiceServer(srv.s, srv)
+	return srv
 }
 
 // Run method starts the grpc server

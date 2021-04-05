@@ -20,7 +20,7 @@ func (srv *Server) Auth(ctx context.Context, req *pb.AuthPayload) (*pb.AuthRespo
 	if err != nil {
 		return nil, status.Errorf(
 			codes.Internal,
-			fmt.Sprintf("Internal error: %v", err),
+			fmt.Sprintf("internal error: %v", err),
 		)
 	}
 	return &pb.AuthResponse{

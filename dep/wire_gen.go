@@ -54,10 +54,7 @@ func InitializeServer() (*infra.Server, error) {
 	router := http.NewRouter(jwtAuthService, customerService)
 	jwtAuthChecker := middleware.NewJWTAuthChecker(configConfig, jwtAuthService)
 	server := http.NewServer(configConfig, engine, router, jwtAuthChecker)
-	grpcServer, err := grpc.NewGRPCServer(configConfig, jwtAuthService)
-	if err != nil {
-		return nil, err
-	}
+	grpcServer := grpc.NewGRPCServer(configConfig, jwtAuthService)
 	localCacheCleaner := cache.NewLocalCacheCleaner(clusterClient, localCache)
 	infraServer := infra.NewServer(server, grpcServer, localCacheCleaner)
 	return infraServer, nil
