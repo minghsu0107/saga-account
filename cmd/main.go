@@ -27,7 +27,7 @@ func main() {
 		ocagent.WithInsecure(),
 		ocagent.WithReconnectionPeriod(5*time.Second),
 		ocagent.WithAddress(ocagentHost),
-		ocagent.WithServiceName("account-svc"))
+		ocagent.WithServiceName("account"))
 	if err != nil {
 		log.Fatalf("failed to create ocagent-exporter: %v", err)
 	}
