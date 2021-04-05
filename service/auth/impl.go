@@ -53,7 +53,7 @@ func (svc *JWTAuthServiceImpl) Auth(authPayload *model.AuthPayload) (*model.Auth
 				Expired: true,
 			}, nil
 		}
-		return nil, v
+		return nil, ErrInvalidToken
 	}
 
 	claims, ok := token.Claims.(*model.JWTClaims)
@@ -84,6 +84,7 @@ func (svc *JWTAuthServiceImpl) SignUp(customer *model.Customer) (string, string,
 		return "", "", err
 	}
 	customer.ID = sonyflakeID
+	customer.Active = true
 	if err := svc.jwtAuthRepo.CreateCustomer(customer); err != nil {
 		if err != repo.ErrDuplicateEntry {
 			svc.logger.Error(err)

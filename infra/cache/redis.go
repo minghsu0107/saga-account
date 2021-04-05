@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"math/rand"
+	"strings"
 	"time"
 
 	"github.com/go-redis/redis/v8"
@@ -14,7 +15,7 @@ import (
 )
 
 var (
-	client *redis.ClusterClient
+	RedisClient *redis.ClusterClient
 	//ErrRedisUnlockFail is redis unlock fail error
 	ErrRedisUnlockFail = errors.New("redis unlock fail")
 	// ErrRedisCmdNotFound is redis command not found error
@@ -88,8 +89,8 @@ type RedisPipelineCmd struct {
 }
 
 func NewRedisClient(config *config.Config) (*redis.ClusterClient, error) {
-	client = redis.NewClusterClient(&redis.ClusterOptions{
-		Addrs:         []string{config.RedisConfig.Addr},
+	RedisClient = redis.NewClusterClient(&redis.ClusterOptions{
+		Addrs:         getServerAddrs(config.RedisConfig.Addrs),
 		Password:      config.RedisConfig.Password,
 		PoolSize:      config.RedisConfig.PoolSize,
 		MaxRetries:    config.RedisConfig.MaxRetries,
@@ -98,12 +99,12 @@ func NewRedisClient(config *config.Config) (*redis.ClusterClient, error) {
 		RouteRandomly: true,
 	})
 	ctx := context.Background()
-	pong, err := client.Ping(ctx).Result()
+	pong, err := RedisClient.Ping(ctx).Result()
 	if err == redis.Nil || err != nil {
 		return nil, err
 	}
 	config.Logger.ContextLogger.WithField("type", "setup:redis").Info("successful redis connection: " + pong)
-	return client, nil
+	return RedisClient, nil
 }
 
 // NewRedisCache is the factory of redis cache
@@ -219,4 +220,8 @@ func (rc *RedisCacheImpl) Publish(topic string, payload interface{}) error {
 
 func getRandomExpiration(expiration int64) time.Duration {
 	return time.Duration(expiration+rand.Int63n(10)) * time.Second
+}
+
+func getServerAddrs(addrs string) []string {
+	return strings.Split(addrs, ",")
 }

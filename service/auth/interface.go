@@ -10,5 +10,5 @@ type JWTAuthService interface {
 
 	SignUp(customer *model.Customer) (string, string, error)
 	Login(email string, password string) (string, string, error)
-	RefreshToken(accessToken string) (string, string, error)
+	RefreshToken(refreshToken string) (string, string, error)
 }

@@ -191,6 +191,7 @@ var _ = Describe("authentication", func() {
 		var customer model.Customer
 		BeforeEach(func() {
 			customer.ID = customerID
+			customer.Active = true
 		})
 		It("should create a new customer successfully", func() {
 			mockJWTAuthRepo.EXPECT().

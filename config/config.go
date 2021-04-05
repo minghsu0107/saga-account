@@ -41,7 +41,7 @@ type LocalCacheConfig struct {
 
 // RedisConfig is redis config type
 type RedisConfig struct {
-	Addr               string `yaml:"addr" envconfig:"REDIS_ADDR"`
+	Addrs              string `yaml:"addrs" envconfig:"REDIS_ADDRS"`
 	Password           string `yaml:"password" envconfig:"REDIS_PASSWORD"`
 	DB                 int    `yaml:"db" envconfig:"REDIS_DB"`
 	PoolSize           int    `yaml:"poolSize" envconfig:"REDIS_POOL_SIZE"`

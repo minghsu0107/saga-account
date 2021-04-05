@@ -12,6 +12,7 @@ import (
 	"github.com/minghsu0107/saga-account/infra/db"
 	"github.com/minghsu0107/saga-account/infra/grpc"
 	"github.com/minghsu0107/saga-account/infra/http"
+	"github.com/minghsu0107/saga-account/infra/http/middleware"
 	"github.com/minghsu0107/saga-account/pkg"
 	"github.com/minghsu0107/saga-account/repo"
 	"github.com/minghsu0107/saga-account/repo/proxy"
@@ -51,7 +52,8 @@ func InitializeServer() (*infra.Server, error) {
 	customerRepoCache := proxy.NewCustomerRepoCache(customerRepository, localCache, redisCache)
 	customerService := account.NewCustomerService(configConfig, customerRepoCache)
 	router := http.NewRouter(jwtAuthService, customerService)
-	server := http.NewServer(configConfig, engine, router)
+	jwtAuthChecker := middleware.NewJWTAuthChecker(configConfig, jwtAuthService)
+	server := http.NewServer(configConfig, engine, router, jwtAuthChecker)
 	grpcServer, err := grpc.NewGRPCServer(configConfig, jwtAuthService)
 	if err != nil {
 		return nil, err
