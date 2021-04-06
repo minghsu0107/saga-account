@@ -68,7 +68,6 @@ var _ = Describe("test grpc server", func() {
 	}
 	authResponse := model.AuthResponse{
 		CustomerID: 1,
-		Active:     true,
 		Expired:    false,
 	}
 	It("should authenticate successfully", func() {
@@ -79,7 +78,6 @@ var _ = Describe("test grpc server", func() {
 		})
 		Expect(err).NotTo(HaveOccurred())
 		Expect(res.CustomerId).To(Equal(authResponse.CustomerID))
-		Expect(res.Active).To(Equal(authResponse.Active))
 		Expect(res.Expired).To(Equal(authResponse.Expired))
 	})
 	It("should return internal error", func() {

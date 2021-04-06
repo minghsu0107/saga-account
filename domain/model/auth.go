@@ -10,12 +10,12 @@ type AuthPayload struct {
 // AuthResponse value object
 type AuthResponse struct {
 	CustomerID uint64
-	Active     bool
 	Expired    bool
 }
 
 // JWTClaims defines JWT claim attributes
 type JWTClaims struct {
 	CustomerID uint64
+	Refresh    bool
 	jwt.StandardClaims
 }

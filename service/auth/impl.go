@@ -40,12 +40,7 @@ func NewJWTAuthService(config *conf.Config, jwtAuthRepo proxy.JWTAuthRepoCache, 
 
 // Auth authenticates an user by checking access token
 func (svc *JWTAuthServiceImpl) Auth(authPayload *model.AuthPayload) (*model.AuthResponse, error) {
-	token, err := jwt.ParseWithClaims(authPayload.AccessToken, &model.JWTClaims{}, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-		}
-		return []byte(svc.jwtSecret), nil
-	})
+	token, err := svc.parseToken(authPayload.AccessToken)
 	if err != nil {
 		v := err.(*jwt.ValidationError)
 		if v.Errors == jwt.ValidationErrorExpired {
@@ -61,18 +56,12 @@ func (svc *JWTAuthServiceImpl) Auth(authPayload *model.AuthPayload) (*model.Auth
 		return nil, ErrInvalidToken
 	}
 
-	customerID := claims.CustomerID
-	exist, active, err := svc.jwtAuthRepo.CheckCustomer(customerID)
-	if err != nil {
-		svc.logger.Error(err)
-		return nil, err
+	if claims.Refresh {
+		return nil, ErrInvalidToken
 	}
-	if !exist {
-		return nil, ErrCustomerNotFound
-	}
+
 	return &model.AuthResponse{
-		CustomerID: customerID,
-		Active:     active,
+		CustomerID: claims.CustomerID,
 		Expired:    false,
 	}, nil
 }
@@ -101,8 +90,11 @@ func (svc *JWTAuthServiceImpl) Login(email string, password string) (string, str
 		svc.logger.Error(err)
 		return "", "", err
 	}
-	if !exist || !credentials.Active {
-		return "", "", ErrAuthentication
+	if !exist {
+		return "", "", ErrCustomerNotFound
+	}
+	if !credentials.Active {
+		return "", "", ErrCustomerInactive
 	}
 	if pkg.CheckPasswordHash(password, credentials.BcryptedPassword) {
 		return svc.newTokenPair(credentials.ID)
@@ -112,29 +104,49 @@ func (svc *JWTAuthServiceImpl) Login(email string, password string) (string, str
 
 // RefreshToken checks the given refresh token and return a new token pair if the refresh token is valid
 func (svc *JWTAuthServiceImpl) RefreshToken(refreshToken string) (string, string, error) {
-	authPayload := &model.AuthPayload{
-		AccessToken: refreshToken,
+	token, err := svc.parseToken(refreshToken)
+	if err != nil {
+		v := err.(*jwt.ValidationError)
+		if v.Errors == jwt.ValidationErrorExpired {
+			return "", "", ErrTokenExpired
+		}
+		return "", "", ErrInvalidToken
 	}
-	authResponse, err := svc.Auth(authPayload)
+
+	claims, ok := token.Claims.(*model.JWTClaims)
+	if !(ok && token.Valid) {
+		return "", "", ErrInvalidToken
+	}
+
+	if !claims.Refresh {
+		return "", "", ErrInvalidToken
+	}
+
+	customerID := claims.CustomerID
+	exist, active, err := svc.jwtAuthRepo.CheckCustomer(customerID)
 	if err != nil {
 		return "", "", err
 	}
-	if !authResponse.Active || authResponse.Expired {
-		return "", "", ErrAuthentication
+	if !exist {
+		return "", "", ErrCustomerNotFound
 	}
-	return svc.newTokenPair(authResponse.CustomerID)
+	if !active {
+		return "", "", ErrCustomerInactive
+	}
+
+	return svc.newTokenPair(customerID)
 }
 
 func (svc *JWTAuthServiceImpl) newTokenPair(customerID uint64) (string, string, error) {
 	now := time.Now()
 	accessTokenExpiredAt := now.Add(time.Duration(svc.accessTokenExpireSecond) * time.Second).Unix()
-	accessToken, err := newJWT(customerID, accessTokenExpiredAt, svc.jwtSecret)
+	accessToken, err := newJWT(customerID, accessTokenExpiredAt, svc.jwtSecret, false)
 	if err != nil {
 		svc.logger.Error(err)
 		return "", "", err
 	}
 	refreshTokenExpiredAt := now.Add(time.Duration(svc.refreshTokenExpireSecond) * time.Second).Unix()
-	refreshToken, err := newJWT(customerID, refreshTokenExpiredAt, svc.jwtSecret)
+	refreshToken, err := newJWT(customerID, refreshTokenExpiredAt, svc.jwtSecret, true)
 	if err != nil {
 		svc.logger.Error(err)
 		return "", "", err
@@ -142,9 +154,10 @@ func (svc *JWTAuthServiceImpl) newTokenPair(customerID uint64) (string, string, 
 	return accessToken, refreshToken, nil
 }
 
-func newJWT(customerID uint64, expiredAt int64, jwtSecret string) (string, error) {
+func newJWT(customerID uint64, expiredAt int64, jwtSecret string, refresh bool) (string, error) {
 	jwtClaims := &model.JWTClaims{
 		CustomerID: customerID,
+		Refresh:    refresh,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expiredAt,
 		},
@@ -155,4 +168,13 @@ func newJWT(customerID uint64, expiredAt int64, jwtSecret string) (string, error
 		return "", err
 	}
 	return accessToken, nil
+}
+
+func (svc *JWTAuthServiceImpl) parseToken(accessToken string) (*jwt.Token, error) {
+	return jwt.ParseWithClaims(accessToken, &model.JWTClaims{}, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		return []byte(svc.jwtSecret), nil
+	})
 }

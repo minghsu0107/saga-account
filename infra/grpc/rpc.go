@@ -25,7 +25,6 @@ func (srv *Server) Auth(ctx context.Context, req *pb.AuthPayload) (*pb.AuthRespo
 	}
 	return &pb.AuthResponse{
 		CustomerId: authResponse.CustomerID,
-		Active:     authResponse.Active,
 		Expired:    authResponse.Expired,
 	}, nil
 }

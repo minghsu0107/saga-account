@@ -68,6 +68,10 @@ func (r *Router) Login(c *gin.Context) {
 	}
 	accessToken, refreshToken, err := r.authSvc.Login(customer.Email, customer.Password)
 	switch err {
+	case auth.ErrCustomerNotFound:
+		response(c, http.StatusNotFound, auth.ErrCustomerNotFound)
+	case auth.ErrCustomerInactive:
+		response(c, http.StatusUnauthorized, auth.ErrCustomerInactive)
 	case auth.ErrAuthentication:
 		response(c, http.StatusUnauthorized, auth.ErrAuthentication)
 	case nil:
@@ -90,12 +94,14 @@ func (r *Router) RefreshToken(c *gin.Context) {
 	}
 	newAccessToken, newRefreshToken, err := r.authSvc.RefreshToken(refreshToken.Token)
 	switch err {
-	case auth.ErrAuthentication:
-		response(c, http.StatusUnauthorized, auth.ErrAuthentication)
 	case auth.ErrInvalidToken:
 		response(c, http.StatusUnauthorized, auth.ErrInvalidToken)
+	case auth.ErrTokenExpired:
+		response(c, http.StatusUnauthorized, auth.ErrTokenExpired)
 	case auth.ErrCustomerNotFound:
-		response(c, http.StatusUnauthorized, auth.ErrCustomerNotFound)
+		response(c, http.StatusNotFound, auth.ErrCustomerNotFound)
+	case auth.ErrCustomerInactive:
+		response(c, http.StatusUnauthorized, auth.ErrCustomerInactive)
 	case nil:
 		c.JSON(http.StatusOK, &presenter.TokenPair{
 			RefreshToken: newAccessToken,
