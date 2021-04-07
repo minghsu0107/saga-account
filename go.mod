@@ -26,7 +26,7 @@ require (
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/kr/text v0.2.0 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
-	github.com/minghsu0107/saga-pb v0.2.0
+	github.com/minghsu0107/saga-pb v0.3.0
 	github.com/minghsu0107/saga-purchase v0.0.0-20210405185204-071a9d2f6240
 	github.com/onsi/ginkgo v1.15.2
 	github.com/onsi/gomega v1.11.0
