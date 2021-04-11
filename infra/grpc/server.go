@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"net"
+	"time"
 
 	"github.com/minghsu0107/saga-account/service/auth"
 	log "github.com/sirupsen/logrus"
@@ -9,8 +10,10 @@ import (
 	"go.opencensus.io/plugin/ocgrpc"
 
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	grpc_logrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
 	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 
+	grpc_ctxtags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
 	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/minghsu0107/saga-account/config"
 	pb "github.com/minghsu0107/saga-pb"
@@ -44,15 +47,33 @@ func NewGRPCServer(config *config.Config, jwtAuthSvc auth.JWTAuthService) *Serve
 	recoveryOpts := []grpc_recovery.Option{
 		grpc_recovery.WithRecoveryHandler(recoveryFunc),
 	}
+	customFunc := func(code codes.Code) log.Level {
+		if code == codes.OK {
+			return log.InfoLevel
+		}
+		return log.ErrorLevel
+	}
+	grpcOpts := []grpc_logrus.Option{
+		grpc_logrus.WithLevels(customFunc),
+		grpc_logrus.WithDurationField(func(duration time.Duration) (key string, value interface{}) {
+			return "grpc.time_ns", duration.Nanoseconds()
+		}),
+	}
+	logrusEntry := *config.Logger.ContextLogger
+	grpc_logrus.ReplaceGrpcLogger(&logrusEntry)
 
 	opts = append(opts,
 		grpc.StatsHandler(&ocgrpc.ServerHandler{}),
 		grpc.StreamInterceptor(grpc_middleware.ChainStreamServer(
 			grpc_prometheus.StreamServerInterceptor,
+			grpc_ctxtags.StreamServerInterceptor(grpc_ctxtags.WithFieldExtractor(grpc_ctxtags.CodeGenRequestFieldExtractor)),
+			grpc_logrus.StreamServerInterceptor(&logrusEntry, grpcOpts...),
 			grpc_recovery.StreamServerInterceptor(recoveryOpts...),
 		)),
 		grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(
 			grpc_prometheus.UnaryServerInterceptor,
+			grpc_ctxtags.UnaryServerInterceptor(grpc_ctxtags.WithFieldExtractor(grpc_ctxtags.CodeGenRequestFieldExtractor)),
+			grpc_logrus.UnaryServerInterceptor(&logrusEntry, grpcOpts...),
 			grpc_recovery.UnaryServerInterceptor(recoveryOpts...),
 		)),
 	)

@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/kelseyhightower/envconfig"
+	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 )
 
@@ -60,6 +61,8 @@ func NewConfig() (*Config, error) {
 		return nil, err
 	}
 	config.Logger = newLogger(config.AppName, config.GinMode)
+	log.SetOutput(config.Logger.Writer)
+
 	return &config, nil
 }
 

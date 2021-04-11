@@ -33,11 +33,10 @@ func NewEngine(config *conf.Config) *gin.Engine {
 		log.SetLevel(log.DebugLevel)
 	}
 	gin.DefaultWriter = io.Writer(config.Logger.Writer)
-	log.SetOutput(gin.DefaultWriter)
 
 	engine := gin.New()
 	engine.Use(gin.Recovery())
-	engine.Use(middleware.LogMiddleware())
+	engine.Use(middleware.LogMiddleware(config.Logger.ContextLogger))
 	engine.Use(middleware.CORSMiddleware())
 
 	mdlw := prommiddleware.New(prommiddleware.Config{

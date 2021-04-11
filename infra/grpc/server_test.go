@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"io/ioutil"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -10,6 +11,7 @@ import (
 	"github.com/minghsu0107/saga-account/service/auth"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 
 	"github.com/minghsu0107/saga-account/domain/model"
@@ -37,7 +39,14 @@ var _ = BeforeSuite(func() {
 	InitMocks()
 	config := &config.Config{
 		GRPCPort: "30010",
+		Logger: &config.Logger{
+			Writer: ioutil.Discard,
+			ContextLogger: log.WithFields(log.Fields{
+				"app_name": "test",
+			}),
+		},
 	}
+	log.SetOutput(config.Logger.Writer)
 	server = NewGRPCServer(config, mockJWTAuthSvc)
 	go func() {
 		err := server.Run()

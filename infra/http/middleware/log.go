@@ -9,7 +9,7 @@ import (
 )
 
 // LogMiddleware is the logging middleware
-func LogMiddleware() gin.HandlerFunc {
+func LogMiddleware(logger *log.Entry) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// Start timer
 		start := time.Now()
@@ -20,7 +20,7 @@ func LogMiddleware() gin.HandlerFunc {
 		// Stop timer
 		duration := GetDurationInMillseconds(start)
 
-		entry := log.WithFields(log.Fields{
+		entry := logger.WithFields(log.Fields{
 			"type":         "router",
 			"client_ip":    GetClientIP(c),
 			"duration(ms)": duration,
