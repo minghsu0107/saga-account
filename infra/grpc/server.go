@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"net"
+	"os"
 	"time"
 
 	"github.com/minghsu0107/saga-account/service/auth"
@@ -38,6 +39,9 @@ func NewGRPCServer(config *config.Config, jwtAuthSvc auth.JWTAuthService) *Serve
 	opts := []grpc.ServerOption{
 		grpc.MaxRecvMsgSize(1024 * 1024 * 8), // increase to 8 MB (default: 4 MB)
 	}
+	if os.Getenv("OC_AGENT_HOST") != "" {
+		opts = append(opts, grpc.StatsHandler(&ocgrpc.ServerHandler{}))
+	}
 
 	grpc_prometheus.EnableHandlingTimeHistogram()
 
@@ -63,7 +67,6 @@ func NewGRPCServer(config *config.Config, jwtAuthSvc auth.JWTAuthService) *Serve
 	grpc_logrus.ReplaceGrpcLogger(&logrusEntry)
 
 	opts = append(opts,
-		grpc.StatsHandler(&ocgrpc.ServerHandler{}),
 		grpc.StreamInterceptor(grpc_middleware.ChainStreamServer(
 			grpc_prometheus.StreamServerInterceptor,
 			grpc_ctxtags.StreamServerInterceptor(grpc_ctxtags.WithFieldExtractor(grpc_ctxtags.CodeGenRequestFieldExtractor)),

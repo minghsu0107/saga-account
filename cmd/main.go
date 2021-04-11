@@ -23,17 +23,18 @@ var (
 )
 
 func main() {
-	oce, err := ocagent.NewExporter(
-		ocagent.WithInsecure(),
-		ocagent.WithReconnectionPeriod(5*time.Second),
-		ocagent.WithAddress(ocagentHost),
-		ocagent.WithServiceName("account"))
-	if err != nil {
-		log.Fatalf("failed to create ocagent-exporter: %v", err)
-	}
-	trace.RegisterExporter(oce)
-
 	errs := make(chan error, 1)
+	if ocagentHost != "" {
+		oce, err := ocagent.NewExporter(
+			ocagent.WithInsecure(),
+			ocagent.WithReconnectionPeriod(5*time.Second),
+			ocagent.WithAddress(ocagentHost),
+			ocagent.WithServiceName("account"))
+		if err != nil {
+			log.Fatalf("failed to create ocagent-exporter: %v", err)
+		}
+		trace.RegisterExporter(oce)
+	}
 	if promPort != "" {
 		go func() {
 			log.Infof("starting prom metrics on PROM_PORT=[%s]", promPort)
