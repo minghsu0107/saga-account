@@ -19,15 +19,19 @@ import (
 	pb "github.com/minghsu0107/saga-pb"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/health"
+	healthpb "google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/keepalive"
+	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc/status"
 )
 
 // Server is the grpc server type
 type Server struct {
-	Port       string
-	jwtAuthSvc auth.JWTAuthService
-	s          *grpc.Server
+	Port         string
+	jwtAuthSvc   auth.JWTAuthService
+	s            *grpc.Server
+	healthServer *health.Server
 }
 
 // NewGRPCServer is the factory of grpc server
@@ -93,6 +97,11 @@ func NewGRPCServer(config *config.Config, jwtAuthSvc auth.JWTAuthService) *Serve
 	)
 	srv.s = grpc.NewServer(opts...)
 	pb.RegisterAuthServiceServer(srv.s, srv)
+
+	srv.healthServer = health.NewServer()
+	healthpb.RegisterHealthServer(srv.s, srv.healthServer)
+
+	reflection.Register(srv.s)
 	return srv
 }
 
@@ -112,5 +121,6 @@ func (srv *Server) Run() error {
 
 // GracefulStop stops grpc server gracefully
 func (srv *Server) GracefulStop() {
+	srv.healthServer.SetServingStatus("", healthpb.HealthCheckResponse_NOT_SERVING)
 	srv.s.GracefulStop()
 }
