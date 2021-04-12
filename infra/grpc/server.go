@@ -13,13 +13,13 @@ import (
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_logrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
 	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
-
 	grpc_ctxtags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
 	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/minghsu0107/saga-account/config"
 	pb "github.com/minghsu0107/saga-pb"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/status"
 )
 
@@ -38,6 +38,17 @@ func NewGRPCServer(config *config.Config, jwtAuthSvc auth.JWTAuthService) *Serve
 	}
 	opts := []grpc.ServerOption{
 		grpc.MaxRecvMsgSize(1024 * 1024 * 8), // increase to 8 MB (default: 4 MB)
+		grpc.KeepaliveEnforcementPolicy(keepalive.EnforcementPolicy{
+			MinTime:             5 * time.Second, // terminate the connection if a client pings more than once every 5 seconds
+			PermitWithoutStream: true,            // allow pings even when there are no active streams
+		}),
+		grpc.KeepaliveParams(keepalive.ServerParameters{
+			MaxConnectionIdle:     15 * time.Second, // if a client is idle for 15 seconds, send a GOAWAY
+			MaxConnectionAge:      30 * time.Second, // if any connection is alive for more than 30 seconds, send a GOAWAY
+			MaxConnectionAgeGrace: 5 * time.Second,  // allow 5 seconds for pending RPCs to complete before forcibly closing connections
+			Time:                  5 * time.Second,  // ping the client if it is idle for 5 seconds to ensure the connection is still active
+			Timeout:               1 * time.Second,  // wait 1 second for the ping ack before assuming the connection is dead
+		}),
 	}
 	if os.Getenv("OC_AGENT_HOST") != "" {
 		opts = append(opts, grpc.StatsHandler(&ocgrpc.ServerHandler{}))
