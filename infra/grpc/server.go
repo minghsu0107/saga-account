@@ -66,14 +66,7 @@ func NewGRPCServer(config *config.Config, jwtAuthSvc auth.JWTAuthService) *Serve
 	recoveryOpts := []grpc_recovery.Option{
 		grpc_recovery.WithRecoveryHandler(recoveryFunc),
 	}
-	customFunc := func(code codes.Code) log.Level {
-		if code == codes.OK {
-			return log.InfoLevel
-		}
-		return log.ErrorLevel
-	}
 	grpcOpts := []grpc_logrus.Option{
-		grpc_logrus.WithLevels(customFunc),
 		grpc_logrus.WithDurationField(func(duration time.Duration) (key string, value interface{}) {
 			return "grpc.time_ns", duration.Nanoseconds()
 		}),
