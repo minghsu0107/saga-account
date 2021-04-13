@@ -27,8 +27,8 @@ import (
 )
 
 var (
-	// KubernetesProvider name
-	KubernetesProvider string = "kubernetes"
+	// KubernetesResolver name
+	KubernetesResolver string = "kubernetes"
 )
 
 // Server is the grpc server type
@@ -47,7 +47,7 @@ func NewGRPCServer(config *config.Config, jwtAuthSvc auth.JWTAuthService) *Serve
 	}
 
 	maxConnectionAge := 30 * time.Second
-	if config.Provider == KubernetesProvider {
+	if config.Resolver == KubernetesResolver {
 		maxConnectionAge = 600 * time.Second
 	}
 	opts := []grpc.ServerOption{
