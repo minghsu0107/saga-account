@@ -14,6 +14,7 @@ type Config struct {
 	GRPCPort         string            `yaml:"grpcPort" envconfig:"GRPC_PORT"`
 	AppName          string            `yaml:"appName" envconfig:"APP_NAME"`
 	GinMode          string            `yaml:"ginMode" envconfig:"GIN_MODE"`
+	Provider         string            `yaml:"provider" envconfig:"PROVIDER"`
 	JWTConfig        *JWTConfig        `yaml:"jwtConfig"`
 	DBConfig         *DBConfig         `yaml:"dbConfig"`
 	LocalCacheConfig *LocalCacheConfig `yaml:"localCacheConfig"`

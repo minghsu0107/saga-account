@@ -26,6 +26,11 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+var (
+	// KubernetesProvider name
+	KubernetesProvider string = "kubernetes"
+)
+
 // Server is the grpc server type
 type Server struct {
 	Port         string
@@ -40,6 +45,11 @@ func NewGRPCServer(config *config.Config, jwtAuthSvc auth.JWTAuthService) *Serve
 		Port:       config.GRPCPort,
 		jwtAuthSvc: jwtAuthSvc,
 	}
+
+	maxConnectionAge := 30 * time.Second
+	if config.Provider == KubernetesProvider {
+		maxConnectionAge = 600 * time.Second
+	}
 	opts := []grpc.ServerOption{
 		grpc.MaxRecvMsgSize(1024 * 1024 * 8), // increase to 8 MB (default: 4 MB)
 		grpc.KeepaliveEnforcementPolicy(keepalive.EnforcementPolicy{
@@ -48,7 +58,7 @@ func NewGRPCServer(config *config.Config, jwtAuthSvc auth.JWTAuthService) *Serve
 		}),
 		grpc.KeepaliveParams(keepalive.ServerParameters{
 			MaxConnectionIdle:     15 * time.Second, // if a client is idle for 15 seconds, send a GOAWAY
-			MaxConnectionAge:      30 * time.Second, // if any connection is alive for more than 30 seconds, send a GOAWAY
+			MaxConnectionAge:      maxConnectionAge, // if any connection is alive for more than maxConnectionAge, send a GOAWAY
 			MaxConnectionAgeGrace: 5 * time.Second,  // allow 5 seconds for pending RPCs to complete before forcibly closing connections
 			Time:                  5 * time.Second,  // ping the client if it is idle for 5 seconds to ensure the connection is still active
 			Timeout:               1 * time.Second,  // wait 1 second for the ping ack before assuming the connection is dead
