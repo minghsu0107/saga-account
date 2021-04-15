@@ -43,10 +43,6 @@ func NewGRPCServer(config *config.Config, jwtAuthSvc auth.JWTAuthService) *Serve
 		jwtAuthSvc: jwtAuthSvc,
 	}
 
-	maxConnectionAge := 30 * time.Second
-	if config.Resolver == KubernetesResolver {
-		maxConnectionAge = 600 * time.Second
-	}
 	opts := []grpc.ServerOption{
 		grpc.MaxRecvMsgSize(1024 * 1024 * 8), // increase to 8 MB (default: 4 MB)
 		grpc.KeepaliveEnforcementPolicy(keepalive.EnforcementPolicy{
@@ -54,11 +50,11 @@ func NewGRPCServer(config *config.Config, jwtAuthSvc auth.JWTAuthService) *Serve
 			PermitWithoutStream: true,            // allow pings even when there are no active streams
 		}),
 		grpc.KeepaliveParams(keepalive.ServerParameters{
-			MaxConnectionIdle:     15 * time.Second, // if a client is idle for 15 seconds, send a GOAWAY
-			MaxConnectionAge:      maxConnectionAge, // if any connection is alive for more than maxConnectionAge, send a GOAWAY
-			MaxConnectionAgeGrace: 5 * time.Second,  // allow 5 seconds for pending RPCs to complete before forcibly closing connections
-			Time:                  5 * time.Second,  // ping the client if it is idle for 5 seconds to ensure the connection is still active
-			Timeout:               1 * time.Second,  // wait 1 second for the ping ack before assuming the connection is dead
+			MaxConnectionIdle:     15 * time.Second,  // if a client is idle for 15 seconds, send a GOAWAY
+			MaxConnectionAge:      600 * time.Second, // if any connection is alive for more than maxConnectionAge, send a GOAWAY
+			MaxConnectionAgeGrace: 5 * time.Second,   // allow 5 seconds for pending RPCs to complete before forcibly closing connections
+			Time:                  5 * time.Second,   // ping the client if it is idle for 5 seconds to ensure the connection is still active
+			Timeout:               1 * time.Second,   // wait 1 second for the ping ack before assuming the connection is dead
 		}),
 	}
 	if os.Getenv("OC_AGENT_HOST") != "" {
