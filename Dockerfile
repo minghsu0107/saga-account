@@ -9,7 +9,7 @@ RUN go mod download
 COPY . .
 RUN make build-linux
 
-FROM alpine:latest
+FROM alpine:3.12
 
 RUN mkdir -p /app
 WORKDIR /app
