@@ -16,7 +16,7 @@ func (srv *Server) Auth(ctx context.Context, req *pb.AuthPayload) (*pb.AuthRespo
 	authPayload := &model.AuthPayload{
 		AccessToken: req.AccessToken,
 	}
-	authResponse, err := srv.jwtAuthSvc.Auth(authPayload)
+	authResponse, err := srv.jwtAuthSvc.Auth(ctx, authPayload)
 	if err != nil {
 		return nil, status.Errorf(
 			codes.Internal,

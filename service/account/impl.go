@@ -1,6 +1,8 @@
 package account
 
 import (
+	"context"
+
 	conf "github.com/minghsu0107/saga-account/config"
 	"github.com/minghsu0107/saga-account/domain/model"
 	"github.com/minghsu0107/saga-account/repo"
@@ -25,8 +27,8 @@ func NewCustomerService(config *conf.Config, customerRepo proxy.CustomerRepoCach
 }
 
 // GetCustomerPersonalInfo gets customer personal info
-func (svc *CustomerServiceImpl) GetCustomerPersonalInfo(customerID uint64) (*model.CustomerPersonalInfo, error) {
-	info, err := svc.customerRepo.GetCustomerPersonalInfo(customerID)
+func (svc *CustomerServiceImpl) GetCustomerPersonalInfo(ctx context.Context, customerID uint64) (*model.CustomerPersonalInfo, error) {
+	info, err := svc.customerRepo.GetCustomerPersonalInfo(ctx, customerID)
 	if err != nil {
 		if err != repo.ErrCustomerNotFound {
 			svc.logger.Error(err)
@@ -41,8 +43,8 @@ func (svc *CustomerServiceImpl) GetCustomerPersonalInfo(customerID uint64) (*mod
 }
 
 // GetCustomerShippingInfo gets customer shipping info
-func (svc *CustomerServiceImpl) GetCustomerShippingInfo(customerID uint64) (*model.CustomerShippingInfo, error) {
-	info, err := svc.customerRepo.GetCustomerShippingInfo(customerID)
+func (svc *CustomerServiceImpl) GetCustomerShippingInfo(ctx context.Context, customerID uint64) (*model.CustomerShippingInfo, error) {
+	info, err := svc.customerRepo.GetCustomerShippingInfo(ctx, customerID)
 	if err != nil {
 		if err != repo.ErrCustomerNotFound {
 			svc.logger.Error(err)
@@ -56,11 +58,11 @@ func (svc *CustomerServiceImpl) GetCustomerShippingInfo(customerID uint64) (*mod
 }
 
 // UpdateCustomerPersonalInfo updates customer's personal info
-func (svc *CustomerServiceImpl) UpdateCustomerPersonalInfo(customerID uint64, personalInfo *model.CustomerPersonalInfo) error {
-	return svc.customerRepo.UpdateCustomerPersonalInfo(customerID, personalInfo)
+func (svc *CustomerServiceImpl) UpdateCustomerPersonalInfo(ctx context.Context, customerID uint64, personalInfo *model.CustomerPersonalInfo) error {
+	return svc.customerRepo.UpdateCustomerPersonalInfo(ctx, customerID, personalInfo)
 }
 
 // UpdateCustomerShippingInfo updates customer's shipping info
-func (svc *CustomerServiceImpl) UpdateCustomerShippingInfo(customerID uint64, shippingInfo *model.CustomerShippingInfo) error {
-	return svc.customerRepo.UpdateCustomerShippingInfo(customerID, shippingInfo)
+func (svc *CustomerServiceImpl) UpdateCustomerShippingInfo(ctx context.Context, customerID uint64, shippingInfo *model.CustomerShippingInfo) error {
+	return svc.customerRepo.UpdateCustomerShippingInfo(ctx, customerID, shippingInfo)
 }

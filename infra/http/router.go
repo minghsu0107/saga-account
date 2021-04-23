@@ -33,7 +33,7 @@ func (r *Router) SignUp(c *gin.Context) {
 		response(c, http.StatusBadRequest, presenter.ErrInvalidParam)
 		return
 	}
-	accessToken, refreshToken, err := r.authSvc.SignUp(&domain_model.Customer{
+	accessToken, refreshToken, err := r.authSvc.SignUp(c.Request.Context(), &domain_model.Customer{
 		Password: customer.Password,
 		PersonalInfo: &domain_model.CustomerPersonalInfo{
 			FirstName: customer.FirstName,
@@ -66,7 +66,7 @@ func (r *Router) Login(c *gin.Context) {
 		response(c, http.StatusBadRequest, presenter.ErrInvalidParam)
 		return
 	}
-	accessToken, refreshToken, err := r.authSvc.Login(customer.Email, customer.Password)
+	accessToken, refreshToken, err := r.authSvc.Login(c.Request.Context(), customer.Email, customer.Password)
 	switch err {
 	case auth.ErrCustomerNotFound:
 		response(c, http.StatusNotFound, auth.ErrCustomerNotFound)
@@ -92,7 +92,7 @@ func (r *Router) RefreshToken(c *gin.Context) {
 		response(c, http.StatusBadRequest, presenter.ErrInvalidParam)
 		return
 	}
-	newAccessToken, newRefreshToken, err := r.authSvc.RefreshToken(refreshToken.Token)
+	newAccessToken, newRefreshToken, err := r.authSvc.RefreshToken(c.Request.Context(), refreshToken.Token)
 	switch err {
 	case auth.ErrInvalidToken:
 		response(c, http.StatusUnauthorized, auth.ErrInvalidToken)
@@ -120,7 +120,7 @@ func (r *Router) GetCustomerPersonalInfo(c *gin.Context) {
 		response(c, http.StatusUnauthorized, presenter.ErrUnautorized)
 		return
 	}
-	personalInfo, err := r.customerSvc.GetCustomerPersonalInfo(customerID)
+	personalInfo, err := r.customerSvc.GetCustomerPersonalInfo(c.Request.Context(), customerID)
 	switch err {
 	case repo.ErrCustomerNotFound:
 		response(c, http.StatusNotFound, repo.ErrCustomerNotFound)
@@ -144,7 +144,7 @@ func (r *Router) GetCustomerShippingInfo(c *gin.Context) {
 		response(c, http.StatusUnauthorized, presenter.ErrUnautorized)
 		return
 	}
-	shippingInfo, err := r.customerSvc.GetCustomerShippingInfo(customerID)
+	shippingInfo, err := r.customerSvc.GetCustomerShippingInfo(c.Request.Context(), customerID)
 	switch err {
 	case repo.ErrCustomerNotFound:
 		response(c, http.StatusNotFound, repo.ErrCustomerNotFound)
@@ -172,7 +172,7 @@ func (r *Router) UpdateCustomerPersonalInfo(c *gin.Context) {
 		response(c, http.StatusUnauthorized, presenter.ErrUnautorized)
 		return
 	}
-	err := r.customerSvc.UpdateCustomerPersonalInfo(customerID, &domain_model.CustomerPersonalInfo{
+	err := r.customerSvc.UpdateCustomerPersonalInfo(c.Request.Context(), customerID, &domain_model.CustomerPersonalInfo{
 		FirstName: personalInfo.FirstName,
 		LastName:  personalInfo.LastName,
 		Email:     personalInfo.Email,
@@ -199,7 +199,7 @@ func (r *Router) UpdateCustomerShippingInfo(c *gin.Context) {
 		response(c, http.StatusUnauthorized, presenter.ErrUnautorized)
 		return
 	}
-	err := r.customerSvc.UpdateCustomerShippingInfo(customerID, &domain_model.CustomerShippingInfo{
+	err := r.customerSvc.UpdateCustomerShippingInfo(c.Request.Context(), customerID, &domain_model.CustomerShippingInfo{
 		Address:     shippingInfo.Address,
 		PhoneNumber: shippingInfo.PhoneNumber,
 	})

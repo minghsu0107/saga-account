@@ -1,6 +1,7 @@
 package proxy
 
 import (
+	"context"
 	"strconv"
 
 	domain_model "github.com/minghsu0107/saga-account/domain/model"
@@ -11,9 +12,9 @@ import (
 
 // JWTAuthRepoCache is the JWT Auth repo cache interface
 type JWTAuthRepoCache interface {
-	CheckCustomer(customerID uint64) (bool, bool, error)
-	CreateCustomer(customer *domain_model.Customer) error
-	GetCustomerCredentials(email string) (bool, *repo.CustomerCredentials, error)
+	CheckCustomer(ctx context.Context, customerID uint64) (bool, bool, error)
+	CreateCustomer(ctx context.Context, customer *domain_model.Customer) error
+	GetCustomerCredentials(ctx context.Context, email string) (bool, *repo.CustomerCredentials, error)
 }
 
 // JWTAuthRepoCacheImpl is the JWT Auth repo cache proxy
@@ -45,7 +46,7 @@ func NewJWTAuthRepoCache(repo repo.JWTAuthRepository, lc cache.LocalCache, rc ca
 	}
 }
 
-func (c *JWTAuthRepoCacheImpl) CheckCustomer(customerID uint64) (bool, bool, error) {
+func (c *JWTAuthRepoCacheImpl) CheckCustomer(ctx context.Context, customerID uint64) (bool, bool, error) {
 	check := &RedisCustomerCheck{}
 	key := pkg.Join("cuscheck:", strconv.FormatUint(customerID, 10))
 
@@ -54,7 +55,7 @@ func (c *JWTAuthRepoCacheImpl) CheckCustomer(customerID uint64) (bool, bool, err
 		return check.Exist, check.Active, nil
 	}
 
-	ok, err = c.rc.Get(key, check)
+	ok, err = c.rc.Get(ctx, key, check)
 	if ok && err == nil {
 		c.lc.Set(key, check)
 		return check.Exist, check.Active, nil
@@ -67,24 +68,24 @@ func (c *JWTAuthRepoCacheImpl) CheckCustomer(customerID uint64) (bool, bool, err
 	}
 	defer mutex.Unlock()
 
-	ok, err = c.rc.Get(key, check)
+	ok, err = c.rc.Get(ctx, key, check)
 	if ok && err == nil {
 		c.lc.Set(key, check)
 		return check.Exist, check.Active, nil
 	}
-	exist, active, err := c.repo.CheckCustomer(customerID)
+	exist, active, err := c.repo.CheckCustomer(ctx, customerID)
 	if err != nil {
 		return false, false, err
 	}
 
-	c.rc.Set(key, &RedisCustomerCheck{
+	c.rc.Set(ctx, key, &RedisCustomerCheck{
 		Exist:  exist,
 		Active: active,
 	})
 	return exist, active, nil
 }
 
-func (c *JWTAuthRepoCacheImpl) GetCustomerCredentials(email string) (bool, *repo.CustomerCredentials, error) {
+func (c *JWTAuthRepoCacheImpl) GetCustomerCredentials(ctx context.Context, email string) (bool, *repo.CustomerCredentials, error) {
 	credentials := &RedisCustomerCredentials{}
 	key := pkg.Join("cuscred:", email)
 
@@ -93,7 +94,7 @@ func (c *JWTAuthRepoCacheImpl) GetCustomerCredentials(email string) (bool, *repo
 		return credentials.Exist, mapCredentials(credentials), nil
 	}
 
-	ok, err = c.rc.Get(key, credentials)
+	ok, err = c.rc.Get(ctx, key, credentials)
 	if ok && err == nil {
 		c.lc.Set(key, credentials)
 		return credentials.Exist, mapCredentials(credentials), nil
@@ -106,13 +107,13 @@ func (c *JWTAuthRepoCacheImpl) GetCustomerCredentials(email string) (bool, *repo
 	}
 	defer mutex.Unlock()
 
-	ok, err = c.rc.Get(key, credentials)
+	ok, err = c.rc.Get(ctx, key, credentials)
 	if ok && err == nil {
 		c.lc.Set(key, credentials)
 		return credentials.Exist, mapCredentials(credentials), nil
 	}
 
-	exist, repoCredentials, err := c.repo.GetCustomerCredentials(email)
+	exist, repoCredentials, err := c.repo.GetCustomerCredentials(ctx, email)
 	if err != nil {
 		return false, nil, err
 	}
@@ -121,7 +122,7 @@ func (c *JWTAuthRepoCacheImpl) GetCustomerCredentials(email string) (bool, *repo
 		repoCredentials = &repo.CustomerCredentials{}
 	}
 
-	c.rc.Set(key, &RedisCustomerCredentials{
+	c.rc.Set(ctx, key, &RedisCustomerCredentials{
 		Exist:            exist,
 		ID:               repoCredentials.ID,
 		Active:           repoCredentials.Active,
@@ -130,8 +131,8 @@ func (c *JWTAuthRepoCacheImpl) GetCustomerCredentials(email string) (bool, *repo
 	return exist, repoCredentials, nil
 }
 
-func (c *JWTAuthRepoCacheImpl) CreateCustomer(customer *domain_model.Customer) error {
-	return c.repo.CreateCustomer(customer)
+func (c *JWTAuthRepoCacheImpl) CreateCustomer(ctx context.Context, customer *domain_model.Customer) error {
+	return c.repo.CreateCustomer(ctx, customer)
 }
 
 func mapCredentials(credentials *RedisCustomerCredentials) *repo.CustomerCredentials {

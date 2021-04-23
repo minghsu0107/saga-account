@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -39,7 +40,7 @@ func NewJWTAuthService(config *conf.Config, jwtAuthRepo proxy.JWTAuthRepoCache, 
 }
 
 // Auth authenticates an user by checking access token
-func (svc *JWTAuthServiceImpl) Auth(authPayload *model.AuthPayload) (*model.AuthResponse, error) {
+func (svc *JWTAuthServiceImpl) Auth(ctx context.Context, authPayload *model.AuthPayload) (*model.AuthResponse, error) {
 	token, err := svc.parseToken(authPayload.AccessToken)
 	if err != nil {
 		v := err.(*jwt.ValidationError)
@@ -67,14 +68,14 @@ func (svc *JWTAuthServiceImpl) Auth(authPayload *model.AuthPayload) (*model.Auth
 }
 
 // SignUp creates a new customer and returns a token pair
-func (svc *JWTAuthServiceImpl) SignUp(customer *model.Customer) (string, string, error) {
+func (svc *JWTAuthServiceImpl) SignUp(ctx context.Context, customer *model.Customer) (string, string, error) {
 	sonyflakeID, err := svc.sf.NextID()
 	if err != nil {
 		return "", "", err
 	}
 	customer.ID = sonyflakeID
 	customer.Active = true
-	if err := svc.jwtAuthRepo.CreateCustomer(customer); err != nil {
+	if err := svc.jwtAuthRepo.CreateCustomer(ctx, customer); err != nil {
 		if err != repo.ErrDuplicateEntry {
 			svc.logger.Error(err)
 		}
@@ -84,8 +85,8 @@ func (svc *JWTAuthServiceImpl) SignUp(customer *model.Customer) (string, string,
 }
 
 // Login authenticate the user and returns a new token pair if succeed
-func (svc *JWTAuthServiceImpl) Login(email string, password string) (string, string, error) {
-	exist, credentials, err := svc.jwtAuthRepo.GetCustomerCredentials(email)
+func (svc *JWTAuthServiceImpl) Login(ctx context.Context, email string, password string) (string, string, error) {
+	exist, credentials, err := svc.jwtAuthRepo.GetCustomerCredentials(ctx, email)
 	if err != nil {
 		svc.logger.Error(err)
 		return "", "", err
@@ -103,7 +104,7 @@ func (svc *JWTAuthServiceImpl) Login(email string, password string) (string, str
 }
 
 // RefreshToken checks the given refresh token and return a new token pair if the refresh token is valid
-func (svc *JWTAuthServiceImpl) RefreshToken(refreshToken string) (string, string, error) {
+func (svc *JWTAuthServiceImpl) RefreshToken(ctx context.Context, refreshToken string) (string, string, error) {
 	token, err := svc.parseToken(refreshToken)
 	if err != nil {
 		v := err.(*jwt.ValidationError)
@@ -123,7 +124,7 @@ func (svc *JWTAuthServiceImpl) RefreshToken(refreshToken string) (string, string
 	}
 
 	customerID := claims.CustomerID
-	exist, active, err := svc.jwtAuthRepo.CheckCustomer(customerID)
+	exist, active, err := svc.jwtAuthRepo.CheckCustomer(ctx, customerID)
 	if err != nil {
 		return "", "", err
 	}

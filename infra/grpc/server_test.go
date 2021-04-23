@@ -4,6 +4,7 @@ import (
 	"context"
 	"io/ioutil"
 	"testing"
+	"time"
 
 	"github.com/golang/mock/gomock"
 	"github.com/minghsu0107/saga-account/config"
@@ -55,8 +56,10 @@ var _ = BeforeSuite(func() {
 		}
 	}()
 
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
 	cc, err := grpc.DialContext(
-		context.Background(),
+		ctx,
 		"localhost:30010",
 		grpc.WithInsecure(),
 		grpc.WithBlock(),
@@ -80,9 +83,13 @@ var _ = Describe("test grpc server", func() {
 		Expired:    false,
 	}
 	It("should authenticate successfully", func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+		defer cancel()
+
 		mockJWTAuthSvc.EXPECT().
-			Auth(&authPayload).Return(&authResponse, nil)
-		res, err := client.Auth(context.Background(), &pb.AuthPayload{
+			Auth(gomock.Any(), &authPayload).Return(&authResponse, nil)
+
+		res, err := client.Auth(ctx, &pb.AuthPayload{
 			AccessToken: authPayload.AccessToken,
 		})
 		Expect(err).NotTo(HaveOccurred())
@@ -90,9 +97,11 @@ var _ = Describe("test grpc server", func() {
 		Expect(res.Expired).To(Equal(authResponse.Expired))
 	})
 	It("should return internal error", func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+		defer cancel()
 		mockJWTAuthSvc.EXPECT().
-			Auth(&authPayload).Return(nil, auth.ErrInvalidToken)
-		_, err := client.Auth(context.Background(), &pb.AuthPayload{
+			Auth(gomock.Any(), &authPayload).Return(nil, auth.ErrInvalidToken)
+		_, err := client.Auth(ctx, &pb.AuthPayload{
 			AccessToken: authPayload.AccessToken,
 		})
 		Expect(err).To(HaveOccurred())

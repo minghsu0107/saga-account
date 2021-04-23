@@ -1,6 +1,7 @@
 package repo
 
 import (
+	"context"
 	"testing"
 
 	"github.com/minghsu0107/saga-account/pkg"
@@ -66,7 +67,7 @@ var _ = Describe("test repo", func() {
 	}
 	var _ = Describe("auth repo", func() {
 		var _ = It("should create customer", func() {
-			err := authRepo.CreateCustomer(&customer)
+			err := authRepo.CreateCustomer(context.Background(), &customer)
 			Expect(err).To(BeNil())
 		})
 		var _ = It("should not insert duplicate customer", func() {
@@ -76,11 +77,11 @@ var _ = Describe("test repo", func() {
 			}
 			newCustomer := customer
 			newCustomer.ID = newID
-			err = authRepo.CreateCustomer(&newCustomer)
+			err = authRepo.CreateCustomer(context.Background(), &newCustomer)
 			Expect(err).To(Equal(ErrDuplicateEntry))
 		})
 		var _ = It("should check customer", func() {
-			exist, active, err := authRepo.CheckCustomer(customer.ID)
+			exist, active, err := authRepo.CheckCustomer(context.Background(), customer.ID)
 			Expect(err).To(BeNil())
 			Expect(exist).To(Equal(true))
 			Expect(active).To(Equal(customer.Active))
@@ -90,13 +91,13 @@ var _ = Describe("test repo", func() {
 			if err != nil {
 				panic(err)
 			}
-			exist, active, err := authRepo.CheckCustomer(nonExistID)
+			exist, active, err := authRepo.CheckCustomer(context.Background(), nonExistID)
 			Expect(err).To(BeNil())
 			Expect(exist).To(Equal(false))
 			Expect(active).To(Equal(false))
 		})
 		var _ = It("should get customer credentials", func() {
-			exist, credentials, err := authRepo.GetCustomerCredentials(customer.PersonalInfo.Email)
+			exist, credentials, err := authRepo.GetCustomerCredentials(context.Background(), customer.PersonalInfo.Email)
 			Expect(err).To(BeNil())
 			Expect(exist).To(Equal(true))
 			Expect(credentials.ID).To(Equal(customer.ID))
@@ -104,14 +105,14 @@ var _ = Describe("test repo", func() {
 			Expect(pkg.CheckPasswordHash(customer.Password, credentials.BcryptedPassword)).To(Equal(true))
 		})
 		var _ = It("should fail to get customer credentials if customer does not exist", func() {
-			exist, _, err := authRepo.GetCustomerCredentials("notexist@ming.com")
+			exist, _, err := authRepo.GetCustomerCredentials(context.Background(), "notexist@ming.com")
 			Expect(err).To(BeNil())
 			Expect(exist).To(Equal(false))
 		})
 	})
 	var _ = Describe("account repo", func() {
 		var _ = It("should get customer personal info", func() {
-			info, err := customerRepo.GetCustomerPersonalInfo(customer.ID)
+			info, err := customerRepo.GetCustomerPersonalInfo(context.Background(), customer.ID)
 			Expect(err).To(BeNil())
 			Expect(info).To(Equal(&CustomerPersonalInfo{
 				FirstName: customer.PersonalInfo.FirstName,
@@ -124,11 +125,11 @@ var _ = Describe("test repo", func() {
 			if err != nil {
 				panic(err)
 			}
-			_, err = customerRepo.GetCustomerPersonalInfo(nonExistID)
+			_, err = customerRepo.GetCustomerPersonalInfo(context.Background(), nonExistID)
 			Expect(err).To(Equal(ErrCustomerNotFound))
 		})
 		var _ = It("should get customer shipping info", func() {
-			info, err := customerRepo.GetCustomerShippingInfo(customer.ID)
+			info, err := customerRepo.GetCustomerShippingInfo(context.Background(), customer.ID)
 			Expect(err).To(BeNil())
 			Expect(info).To(Equal(&CustomerShippingInfo{
 				Address:     customer.ShippingInfo.Address,
@@ -140,7 +141,7 @@ var _ = Describe("test repo", func() {
 			if err != nil {
 				panic(err)
 			}
-			_, err = customerRepo.GetCustomerShippingInfo(nonExistID)
+			_, err = customerRepo.GetCustomerShippingInfo(context.Background(), nonExistID)
 			Expect(err).To(Equal(ErrCustomerNotFound))
 		})
 		var _ = It("should update customer personal info", func() {
@@ -149,17 +150,17 @@ var _ = Describe("test repo", func() {
 				LastName:  "dummy",
 				Email:     "dummy@ming.com",
 			}
-			err := customerRepo.UpdateCustomerPersonalInfo(customer.ID, &personalInfo)
+			err := customerRepo.UpdateCustomerPersonalInfo(context.Background(), customer.ID, &personalInfo)
 			Expect(err).To(BeNil())
 
-			curPersonalInfo, _ := customerRepo.GetCustomerPersonalInfo(customer.ID)
+			curPersonalInfo, _ := customerRepo.GetCustomerPersonalInfo(context.Background(), customer.ID)
 			Expect(&personalInfo).To(Equal(&domain_model.CustomerPersonalInfo{
 				FirstName: curPersonalInfo.FirstName,
 				LastName:  curPersonalInfo.LastName,
 				Email:     curPersonalInfo.Email,
 			}))
 
-			originalShippingInfo, _ := customerRepo.GetCustomerShippingInfo(customer.ID)
+			originalShippingInfo, _ := customerRepo.GetCustomerShippingInfo(context.Background(), customer.ID)
 			Expect(customer.ShippingInfo).To(Equal(&domain_model.CustomerShippingInfo{
 				Address:     originalShippingInfo.Address,
 				PhoneNumber: originalShippingInfo.PhoneNumber,
@@ -170,10 +171,10 @@ var _ = Describe("test repo", func() {
 				Address:     "dummy adress",
 				PhoneNumber: "dummy phone number",
 			}
-			err := customerRepo.UpdateCustomerShippingInfo(customer.ID, &shippingInfo)
+			err := customerRepo.UpdateCustomerShippingInfo(context.Background(), customer.ID, &shippingInfo)
 			Expect(err).To(BeNil())
 
-			curShippingInfo, _ := customerRepo.GetCustomerShippingInfo(customer.ID)
+			curShippingInfo, _ := customerRepo.GetCustomerShippingInfo(context.Background(), customer.ID)
 			Expect(&shippingInfo).To(Equal(&domain_model.CustomerShippingInfo{
 				Address:     curShippingInfo.Address,
 				PhoneNumber: curShippingInfo.PhoneNumber,

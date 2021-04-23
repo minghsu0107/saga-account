@@ -1,6 +1,7 @@
 package repo
 
 import (
+	"context"
 	"errors"
 
 	domain_model "github.com/minghsu0107/saga-account/domain/model"
@@ -10,10 +11,10 @@ import (
 
 // CustomerRepository is the customer repository interface
 type CustomerRepository interface {
-	GetCustomerPersonalInfo(customerID uint64) (*CustomerPersonalInfo, error)
-	GetCustomerShippingInfo(customerID uint64) (*CustomerShippingInfo, error)
-	UpdateCustomerPersonalInfo(customerID uint64, personalInfo *domain_model.CustomerPersonalInfo) error
-	UpdateCustomerShippingInfo(customerID uint64, shippingInfo *domain_model.CustomerShippingInfo) error
+	GetCustomerPersonalInfo(ctx context.Context, customerID uint64) (*CustomerPersonalInfo, error)
+	GetCustomerShippingInfo(ctx context.Context, customerID uint64) (*CustomerShippingInfo, error)
+	UpdateCustomerPersonalInfo(ctx context.Context, customerID uint64, personalInfo *domain_model.CustomerPersonalInfo) error
+	UpdateCustomerShippingInfo(ctx context.Context, customerID uint64, shippingInfo *domain_model.CustomerShippingInfo) error
 }
 
 // CustomerRepositoryImpl implements CustomerRepository interface
@@ -42,10 +43,10 @@ func NewCustomerRepository(db *gorm.DB) CustomerRepository {
 }
 
 // GetCustomerPersonalInfo queries customer personal info by customer id
-func (repo *CustomerRepositoryImpl) GetCustomerPersonalInfo(customerID uint64) (*CustomerPersonalInfo, error) {
+func (repo *CustomerRepositoryImpl) GetCustomerPersonalInfo(ctx context.Context, customerID uint64) (*CustomerPersonalInfo, error) {
 	var info CustomerPersonalInfo
 	if err := repo.db.Model(&model.Customer{}).Select("first_name", "last_name", "email").
-		Where("id = ?", customerID).First(&info).Error; err != nil {
+		Where("id = ?", customerID).First(&info).WithContext(ctx).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, ErrCustomerNotFound
 		}
@@ -55,10 +56,10 @@ func (repo *CustomerRepositoryImpl) GetCustomerPersonalInfo(customerID uint64) (
 }
 
 // GetCustomerShippingInfo queries customer shipping info by customer id
-func (repo *CustomerRepositoryImpl) GetCustomerShippingInfo(customerID uint64) (*CustomerShippingInfo, error) {
+func (repo *CustomerRepositoryImpl) GetCustomerShippingInfo(ctx context.Context, customerID uint64) (*CustomerShippingInfo, error) {
 	var info CustomerShippingInfo
 	if err := repo.db.Model(&model.Customer{}).Select("address", "phone_number").
-		Where("id = ?", customerID).First(&info).Error; err != nil {
+		Where("id = ?", customerID).First(&info).WithContext(ctx).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, ErrCustomerNotFound
 		}
@@ -68,25 +69,25 @@ func (repo *CustomerRepositoryImpl) GetCustomerShippingInfo(customerID uint64) (
 }
 
 // UpdateCustomerInfo updates a customer's personal info
-func (repo *CustomerRepositoryImpl) UpdateCustomerPersonalInfo(customerID uint64, personalInfo *domain_model.CustomerPersonalInfo) error {
+func (repo *CustomerRepositoryImpl) UpdateCustomerPersonalInfo(ctx context.Context, customerID uint64, personalInfo *domain_model.CustomerPersonalInfo) error {
 	if err := repo.db.Model(&model.Customer{}).Where("id = ?", customerID).
 		Updates(model.Customer{
 			FirstName: personalInfo.FirstName,
 			LastName:  personalInfo.LastName,
 			Email:     personalInfo.Email,
-		}).Error; err != nil {
+		}).WithContext(ctx).Error; err != nil {
 		return err
 	}
 	return nil
 }
 
 // UpdateCustomerInfo updates a customer's shipping info
-func (repo *CustomerRepositoryImpl) UpdateCustomerShippingInfo(customerID uint64, shippingInfo *domain_model.CustomerShippingInfo) error {
+func (repo *CustomerRepositoryImpl) UpdateCustomerShippingInfo(ctx context.Context, customerID uint64, shippingInfo *domain_model.CustomerShippingInfo) error {
 	if err := repo.db.Model(&model.Customer{}).Where("id = ?", customerID).
 		Updates(model.Customer{
 			Address:     shippingInfo.Address,
 			PhoneNumber: shippingInfo.PhoneNumber,
-		}).Error; err != nil {
+		}).WithContext(ctx).Error; err != nil {
 		return err
 	}
 	return nil

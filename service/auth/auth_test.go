@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"context"
 	"io/ioutil"
 	"testing"
 	"time"
@@ -83,7 +84,7 @@ var _ = Describe("authentication", func() {
 			authPayload.AccessToken, _ = newJWT(customerID, expiredAt, testJWTSecret, false)
 		})
 		It("should authenticate successfully", func() {
-			authResponse, err := authSvc.Auth(&authPayload)
+			authResponse, err := authSvc.Auth(context.Background(), &authPayload)
 			Expect(err).To(BeNil())
 			Expect(authResponse).To(Equal(&model.AuthResponse{
 				CustomerID: customerID,
@@ -97,7 +98,7 @@ var _ = Describe("authentication", func() {
 			authPayload.AccessToken, _ = newJWT(customerID, expiredAt, testJWTSecret, false)
 		})
 		It("should success when passing valid access token", func() {
-			authResponse, err := authSvc.Auth(&authPayload)
+			authResponse, err := authSvc.Auth(context.Background(), &authPayload)
 			Expect(err).To(BeNil())
 			Expect(authResponse).To(Equal(&model.AuthResponse{
 				Expired: true,
@@ -109,7 +110,7 @@ var _ = Describe("authentication", func() {
 			authPayload.AccessToken = "invalidtoken"
 		})
 		It("should fail when passing invalid access token", func() {
-			_, err := authSvc.Auth(&authPayload)
+			_, err := authSvc.Auth(context.Background(), &authPayload)
 			Expect(err).To(Equal(ErrInvalidToken))
 		})
 	})
@@ -119,7 +120,7 @@ var _ = Describe("authentication", func() {
 			authPayload.AccessToken, _ = newJWT(customerID, expiredAt, testJWTSecret, true)
 		})
 		It("should fail authentication", func() {
-			_, err := authSvc.Auth(&authPayload)
+			_, err := authSvc.Auth(context.Background(), &authPayload)
 			Expect(err).To(Equal(ErrInvalidToken))
 		})
 	})
@@ -136,13 +137,13 @@ var _ = Describe("authentication", func() {
 			})
 			It("should generate a new token pair", func() {
 				mockJWTAuthRepo.EXPECT().
-					CheckCustomer(customerID).Return(true, true, nil)
-				newAccessToken, newRefreshToken, err := authSvc.RefreshToken(refreshToken)
+					CheckCustomer(context.Background(), customerID).Return(true, true, nil)
+				newAccessToken, newRefreshToken, err := authSvc.RefreshToken(context.Background(), refreshToken)
 				Expect(err).To(BeNil())
 				Expect(accessToken).NotTo(Equal(newAccessToken))
 
 				authPayload.AccessToken = newAccessToken
-				authResponse, err := authSvc.Auth(&authPayload)
+				authResponse, err := authSvc.Auth(context.Background(), &authPayload)
 				Expect(err).To(BeNil())
 				Expect(authResponse).To(Equal(&model.AuthResponse{
 					CustomerID: customerID,
@@ -150,8 +151,8 @@ var _ = Describe("authentication", func() {
 				}))
 
 				mockJWTAuthRepo.EXPECT().
-					CheckCustomer(customerID).Return(true, true, nil)
-				_, _, err = authSvc.RefreshToken(newRefreshToken)
+					CheckCustomer(context.Background(), customerID).Return(true, true, nil)
+				_, _, err = authSvc.RefreshToken(context.Background(), newRefreshToken)
 				Expect(err).To(BeNil())
 			})
 		})
@@ -162,7 +163,7 @@ var _ = Describe("authentication", func() {
 				refreshToken, _ = newJWT(customerID, refreshTokenExpiredAt, testJWTSecret, true)
 			})
 			It("should get token expired error", func() {
-				_, _, err := authSvc.RefreshToken(refreshToken)
+				_, _, err := authSvc.RefreshToken(context.Background(), refreshToken)
 				Expect(err).To(Equal(ErrTokenExpired))
 			})
 		})
@@ -171,13 +172,13 @@ var _ = Describe("authentication", func() {
 				refreshToken = "invalidtoken"
 			})
 			It("should fail when passing invalid refresh token", func() {
-				_, _, err := authSvc.RefreshToken(refreshToken)
+				_, _, err := authSvc.RefreshToken(context.Background(), refreshToken)
 				Expect(err).To(Equal(ErrInvalidToken))
 			})
 			It("should fail when passing valid access token", func() {
 				accessTokenExpiredAt := time.Now().Add(1 * time.Second).Unix()
 				accessToken, _ = newJWT(customerID, accessTokenExpiredAt, testJWTSecret, false)
-				_, _, err := authSvc.RefreshToken(accessToken)
+				_, _, err := authSvc.RefreshToken(context.Background(), accessToken)
 				Expect(err).To(Equal(ErrInvalidToken))
 			})
 		})
@@ -191,14 +192,14 @@ var _ = Describe("authentication", func() {
 			})
 			It("should fail when customer does not exist", func() {
 				mockJWTAuthRepo.EXPECT().
-					CheckCustomer(customerID).Return(false, false, nil)
-				_, _, err := authSvc.RefreshToken(refreshToken)
+					CheckCustomer(context.Background(), customerID).Return(false, false, nil)
+				_, _, err := authSvc.RefreshToken(context.Background(), refreshToken)
 				Expect(err).To(Equal(ErrCustomerNotFound))
 			})
 			It("should fail when customer does not exist", func() {
 				mockJWTAuthRepo.EXPECT().
-					CheckCustomer(customerID).Return(true, false, nil)
-				_, _, err := authSvc.RefreshToken(refreshToken)
+					CheckCustomer(context.Background(), customerID).Return(true, false, nil)
+				_, _, err := authSvc.RefreshToken(context.Background(), refreshToken)
 				Expect(err).To(Equal(ErrCustomerInactive))
 			})
 		})
@@ -212,12 +213,12 @@ var _ = Describe("authentication", func() {
 		})
 		It("should create a new customer successfully", func() {
 			mockJWTAuthRepo.EXPECT().
-				CreateCustomer(&customer).Return(nil)
-			accessToken, refreshToken, err := authSvc.SignUp(&model.Customer{})
+				CreateCustomer(context.Background(), &customer).Return(nil)
+			accessToken, refreshToken, err := authSvc.SignUp(context.Background(), &model.Customer{})
 			Expect(err).To(BeNil())
 
 			authPayload.AccessToken = accessToken
-			authResponse, err := authSvc.Auth(&authPayload)
+			authResponse, err := authSvc.Auth(context.Background(), &authPayload)
 			Expect(err).To(BeNil())
 			Expect(authResponse).To(Equal(&model.AuthResponse{
 				CustomerID: customerID,
@@ -225,14 +226,14 @@ var _ = Describe("authentication", func() {
 			}))
 
 			mockJWTAuthRepo.EXPECT().
-				CheckCustomer(customerID).Return(true, true, nil)
-			_, _, err = authSvc.RefreshToken(refreshToken)
+				CheckCustomer(context.Background(), customerID).Return(true, true, nil)
+			_, _, err = authSvc.RefreshToken(context.Background(), refreshToken)
 			Expect(err).To(BeNil())
 		})
 		It("should get error when inserting duplicate entry", func() {
 			mockJWTAuthRepo.EXPECT().
-				CreateCustomer(&customer).Return(repo.ErrDuplicateEntry)
-			_, _, err := authSvc.SignUp(&model.Customer{})
+				CreateCustomer(context.Background(), &customer).Return(repo.ErrDuplicateEntry)
+			_, _, err := authSvc.SignUp(context.Background(), &model.Customer{})
 			Expect(err).To(Equal(repo.ErrDuplicateEntry))
 		})
 	})
@@ -247,16 +248,16 @@ var _ = Describe("authentication", func() {
 		})
 		It("should login a customer succesfully", func() {
 			mockJWTAuthRepo.EXPECT().
-				GetCustomerCredentials(email).Return(true, &repo.CustomerCredentials{
+				GetCustomerCredentials(context.Background(), email).Return(true, &repo.CustomerCredentials{
 				ID:               customerID,
 				Active:           true,
 				BcryptedPassword: bcryptedPassword,
 			}, nil)
-			accessToken, refreshToken, err := authSvc.Login(email, password)
+			accessToken, refreshToken, err := authSvc.Login(context.Background(), email, password)
 			Expect(err).To(BeNil())
 
 			authPayload.AccessToken = accessToken
-			authResponse, err := authSvc.Auth(&authPayload)
+			authResponse, err := authSvc.Auth(context.Background(), &authPayload)
 			Expect(err).To(BeNil())
 			Expect(authResponse).To(Equal(&model.AuthResponse{
 				CustomerID: customerID,
@@ -264,35 +265,35 @@ var _ = Describe("authentication", func() {
 			}))
 
 			mockJWTAuthRepo.EXPECT().
-				CheckCustomer(customerID).Return(true, true, nil)
-			_, _, err = authSvc.RefreshToken(refreshToken)
+				CheckCustomer(context.Background(), customerID).Return(true, true, nil)
+			_, _, err = authSvc.RefreshToken(context.Background(), refreshToken)
 			Expect(err).To(BeNil())
 		})
 		It("should fail authentication", func() {
 			When("customer does not exist", func() {
 				mockJWTAuthRepo.EXPECT().
-					GetCustomerCredentials(email).Return(false, nil, nil)
-				_, _, err := authSvc.Login(email, password)
+					GetCustomerCredentials(context.Background(), email).Return(false, nil, nil)
+				_, _, err := authSvc.Login(context.Background(), email, password)
 				Expect(err).To(Equal(ErrCustomerNotFound))
 			})
 			When("customer is not active", func() {
 				mockJWTAuthRepo.EXPECT().
-					GetCustomerCredentials(email).Return(true, &repo.CustomerCredentials{
+					GetCustomerCredentials(context.Background(), email).Return(true, &repo.CustomerCredentials{
 					ID:               customerID,
 					Active:           false,
 					BcryptedPassword: bcryptedPassword,
 				}, nil)
-				_, _, err := authSvc.Login(email, password)
+				_, _, err := authSvc.Login(context.Background(), email, password)
 				Expect(err).To(Equal(ErrCustomerInactive))
 			})
 			When("enter wrong password", func() {
 				mockJWTAuthRepo.EXPECT().
-					GetCustomerCredentials(email).Return(true, &repo.CustomerCredentials{
+					GetCustomerCredentials(context.Background(), email).Return(true, &repo.CustomerCredentials{
 					ID:               customerID,
 					Active:           true,
 					BcryptedPassword: bcryptedPassword,
 				}, nil)
-				_, _, err := authSvc.Login(email, "wrongpassword")
+				_, _, err := authSvc.Login(context.Background(), email, "wrongpassword")
 				Expect(err).To(Equal(ErrAuthentication))
 			})
 		})

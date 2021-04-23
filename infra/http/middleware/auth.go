@@ -31,7 +31,7 @@ func (m *JWTAuthChecker) JWTAuth() gin.HandlerFunc {
 			c.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
-		authResult, err := m.authSvc.Auth(&model.AuthPayload{
+		authResult, err := m.authSvc.Auth(c.Request.Context(), &model.AuthPayload{
 			AccessToken: accessToken,
 		})
 		if err != nil {

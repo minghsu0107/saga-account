@@ -1,6 +1,7 @@
 package repo
 
 import (
+	"context"
 	"errors"
 
 	"github.com/minghsu0107/saga-account/pkg"
@@ -13,9 +14,9 @@ import (
 
 // JWTAuthRepository is the JWTAuth repository interface
 type JWTAuthRepository interface {
-	CheckCustomer(customerID uint64) (bool, bool, error)
-	CreateCustomer(customer *domain_model.Customer) error
-	GetCustomerCredentials(email string) (bool, *CustomerCredentials, error)
+	CheckCustomer(ctx context.Context, customerID uint64) (bool, bool, error)
+	CreateCustomer(ctx context.Context, customer *domain_model.Customer) error
+	GetCustomerCredentials(ctx context.Context, email string) (bool, *CustomerCredentials, error)
 }
 
 // JWTAuthRepositoryImpl implements JWTAuthRepository interface
@@ -42,10 +43,10 @@ func NewJWTAuthRepository(db *gorm.DB) JWTAuthRepository {
 }
 
 // CheckCustomer checks whether a customer exists and is active
-func (repo *JWTAuthRepositoryImpl) CheckCustomer(customerID uint64) (bool, bool, error) {
+func (repo *JWTAuthRepositoryImpl) CheckCustomer(ctx context.Context, customerID uint64) (bool, bool, error) {
 	var status customerCheckStatus
 	if err := repo.db.Model(&model.Customer{}).Select("active").
-		Where("id = ?", customerID).First(&status).Error; err != nil {
+		Where("id = ?", customerID).First(&status).WithContext(ctx).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return false, false, nil
 		}
@@ -56,7 +57,7 @@ func (repo *JWTAuthRepositoryImpl) CheckCustomer(customerID uint64) (bool, bool,
 
 // CreateCustomer creates a new customer
 // it returns error if ID, email, or phone number duplicates
-func (repo *JWTAuthRepositoryImpl) CreateCustomer(customer *domain_model.Customer) error {
+func (repo *JWTAuthRepositoryImpl) CreateCustomer(ctx context.Context, customer *domain_model.Customer) error {
 	bcryptedPassword, err := pkg.HashPassword(customer.Password)
 	if err != nil {
 		return err
@@ -70,7 +71,7 @@ func (repo *JWTAuthRepositoryImpl) CreateCustomer(customer *domain_model.Custome
 		Address:          customer.ShippingInfo.Address,
 		PhoneNumber:      customer.ShippingInfo.PhoneNumber,
 		BcryptedPassword: bcryptedPassword,
-	}).Error; err != nil {
+	}).WithContext(ctx).Error; err != nil {
 		var mysqlErr *mysql.MySQLError
 		if errors.As(err, &mysqlErr) && mysqlErr.Number == 1062 {
 			return ErrDuplicateEntry
@@ -81,10 +82,10 @@ func (repo *JWTAuthRepositoryImpl) CreateCustomer(customer *domain_model.Custome
 }
 
 // GetCustomerCredentials finds customer credentials by customer id
-func (repo *JWTAuthRepositoryImpl) GetCustomerCredentials(email string) (bool, *CustomerCredentials, error) {
+func (repo *JWTAuthRepositoryImpl) GetCustomerCredentials(ctx context.Context, email string) (bool, *CustomerCredentials, error) {
 	var credentials CustomerCredentials
 	if err := repo.db.Model(&model.Customer{}).Select("id", "active", "bcrypted_password").
-		Where("email = ?", email).First(&credentials).Error; err != nil {
+		Where("email = ?", email).First(&credentials).WithContext(ctx).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return false, nil, nil
 		}

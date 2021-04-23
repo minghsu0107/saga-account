@@ -1,14 +1,16 @@
 package auth
 
 import (
+	"context"
+
 	"github.com/minghsu0107/saga-account/domain/model"
 )
 
 // JWTAuthService defines jwt authentication interface
 type JWTAuthService interface {
-	Auth(authPayload *model.AuthPayload) (*model.AuthResponse, error)
+	Auth(ctx context.Context, authPayload *model.AuthPayload) (*model.AuthResponse, error)
 
-	SignUp(customer *model.Customer) (string, string, error)
-	Login(email string, password string) (string, string, error)
-	RefreshToken(refreshToken string) (string, string, error)
+	SignUp(ctx context.Context, customer *model.Customer) (string, string, error)
+	Login(ctx context.Context, email string, password string) (string, string, error)
+	RefreshToken(ctx context.Context, refreshToken string) (string, string, error)
 }

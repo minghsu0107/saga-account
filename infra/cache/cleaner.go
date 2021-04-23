@@ -51,7 +51,7 @@ func (l *LocalCacheCleanerImpl) SubscribeInvalidationEvent() error {
 			continue
 		}
 		for _, key := range keys {
-			task := l.cleanTask(context.Background(), key)
+			task := l.cleanTask(ctx, key)
 			l.pool.Do(task)
 		}
 	}
