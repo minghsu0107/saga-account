@@ -35,6 +35,7 @@ func main() {
 		}
 		trace.RegisterExporter(oce)
 		trace.ApplyConfig(trace.Config{
+			// If not specify then sampler would be set to ProbabilitySampler(defaultSamplingProbability)
 			//DefaultSampler: trace.ProbabilitySampler(0.2),
 			DefaultSampler: trace.AlwaysSample(),
 		})
