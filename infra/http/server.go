@@ -89,6 +89,11 @@ func (s *Server) Run() error {
 		// default propagation format: B3
 		Handler: &ochttp.Handler{
 			Handler: s.Engine,
+			// IsHealthEndpoint holds the function to use for determining if the
+			// incoming HTTP request should be considered a health check. This is in
+			// addition to the private isHealthEndpoint func which may also indicate
+			// tracing should be skipped.
+			// IsHealthEndpoint: nil,
 		},
 	}
 	log.Infoln("http server listening on ", addr)

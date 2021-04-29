@@ -34,12 +34,15 @@ func main() {
 			log.Fatalf("failed to create ocagent-exporter: %v", err)
 		}
 		trace.RegisterExporter(oce)
-		trace.ApplyConfig(trace.Config{
-			// If not specify then sampler would be set to ProbabilitySampler(defaultSamplingProbability)
-			// defaultSamplingProbability = 1e-4
-			//DefaultSampler: trace.ProbabilitySampler(0.2),
-			DefaultSampler: trace.AlwaysSample(),
-		})
+		/*
+			// if parant span is sampled, the current is also sampled
+			// despite the sampling configuration in order to obtain full span tree
+			trace.ApplyConfig(trace.Config{
+				// If not specified, then sampler would be set to ProbabilitySampler(defaultSamplingProbability)
+				// defaultSamplingProbability is 1e-4
+				// DefaultSampler: trace.NeverSample(),
+			})
+		*/
 	}
 	if promPort != "" {
 		go func() {
