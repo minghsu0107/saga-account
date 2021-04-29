@@ -12,6 +12,7 @@ import (
 	metrics "github.com/slok/go-http-metrics/metrics/prometheus"
 	prommiddleware "github.com/slok/go-http-metrics/middleware"
 	ginmiddleware "github.com/slok/go-http-metrics/middleware/gin"
+	"go.opencensus.io/plugin/ochttp"
 )
 
 // Server is the http wrapper
@@ -84,8 +85,10 @@ func (s *Server) Run() error {
 	s.RegisterRoutes()
 	addr := ":" + s.Port
 	s.svr = &http.Server{
-		Addr:    addr,
-		Handler: s.Engine,
+		Addr: addr,
+		Handler: &ochttp.Handler{
+			Handler: s.Engine,
+		},
 	}
 	log.Infoln("http server listening on ", addr)
 	err := s.svr.ListenAndServe()
