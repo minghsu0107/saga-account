@@ -86,6 +86,7 @@ func (s *Server) Run() error {
 	addr := ":" + s.Port
 	s.svr = &http.Server{
 		Addr: addr,
+		// default propagation format: B3
 		Handler: &ochttp.Handler{
 			Handler: s.Engine,
 		},
