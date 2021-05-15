@@ -49,7 +49,7 @@ func InitializeServer() (*infra.Server, error) {
 	}
 	jwtAuthService := auth.NewJWTAuthService(configConfig, jwtAuthRepoCache, idGenerator)
 	customerRepository := repo.NewCustomerRepository(gormDB)
-	customerRepoCache := proxy.NewCustomerRepoCache(customerRepository, localCache, redisCache)
+	customerRepoCache := proxy.NewCustomerRepoCache(configConfig, customerRepository, localCache, redisCache)
 	customerService := account.NewCustomerService(configConfig, customerRepoCache)
 	router := http.NewRouter(jwtAuthService, customerService)
 	jwtAuthChecker := middleware.NewJWTAuthChecker(configConfig, jwtAuthService)

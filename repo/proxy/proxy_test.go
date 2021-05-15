@@ -2,6 +2,7 @@ package proxy
 
 import (
 	"context"
+	"io/ioutil"
 	"strconv"
 	"testing"
 	"time"
@@ -17,6 +18,7 @@ import (
 	"github.com/minghsu0107/saga-account/repo"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -59,6 +61,12 @@ var _ = BeforeSuite(func() {
 		RedisConfig: &config.RedisConfig{
 			ExpirationSeconds: 60,
 		},
+		Logger: &config.Logger{
+			Writer: ioutil.Discard,
+			ContextLogger: log.WithFields(log.Fields{
+				"app_name": "test",
+			}),
+		},
 	}
 	s := NewMiniRedis()
 	client = redis.NewClusterClient(&redis.ClusterOptions{
@@ -66,7 +74,7 @@ var _ = BeforeSuite(func() {
 	})
 	lc, _ = cache.NewLocalCache(config)
 	rc = cache.NewRedisCache(config, client)
-	customerRepoCache = NewCustomerRepoCache(mockCustomerRepo, lc, rc)
+	customerRepoCache = NewCustomerRepoCache(config, mockCustomerRepo, lc, rc)
 	jwtAuthRepoCache = NewJWTAuthRepoCache(mockJWTAuthRepo, lc, rc)
 	cleaner = cache.NewLocalCacheCleaner(client, lc)
 	go func() {

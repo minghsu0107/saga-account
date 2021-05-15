@@ -4,11 +4,12 @@ import (
 	"context"
 	"strconv"
 
-	"github.com/minghsu0107/saga-account/config"
+	conf "github.com/minghsu0107/saga-account/config"
 	"github.com/minghsu0107/saga-account/domain/model"
 	"github.com/minghsu0107/saga-account/infra/cache"
 	"github.com/minghsu0107/saga-account/pkg"
 	"github.com/minghsu0107/saga-account/repo"
+	"github.com/sirupsen/logrus"
 )
 
 // CustomerRepoCache is the customer repo cache interface
@@ -21,16 +22,18 @@ type CustomerRepoCache interface {
 
 // CustomerRepoCacheImpl is the customer repo cache proxy
 type CustomerRepoCacheImpl struct {
-	repo repo.CustomerRepository
-	lc   cache.LocalCache
-	rc   cache.RedisCache
+	repo   repo.CustomerRepository
+	lc     cache.LocalCache
+	rc     cache.RedisCache
+	logger *logrus.Entry
 }
 
-func NewCustomerRepoCache(repo repo.CustomerRepository, lc cache.LocalCache, rc cache.RedisCache) CustomerRepoCache {
+func NewCustomerRepoCache(config *conf.Config, repo repo.CustomerRepository, lc cache.LocalCache, rc cache.RedisCache) CustomerRepoCache {
 	return &CustomerRepoCacheImpl{
-		repo: repo,
-		lc:   lc,
-		rc:   rc,
+		repo:   repo,
+		lc:     lc,
+		rc:     rc,
+		logger: config.Logger.ContextLogger.WithField("type", "cache"),
 	}
 }
 
@@ -45,7 +48,7 @@ func (c *CustomerRepoCacheImpl) GetCustomerPersonalInfo(ctx context.Context, cus
 
 	ok, err = c.rc.Get(ctx, key, info)
 	if ok && err == nil {
-		c.lc.Set(key, info)
+		c.logError(c.lc.Set(key, info))
 		return info, nil
 	}
 
@@ -58,7 +61,7 @@ func (c *CustomerRepoCacheImpl) GetCustomerPersonalInfo(ctx context.Context, cus
 
 	ok, err = c.rc.Get(ctx, key, info)
 	if ok && err == nil {
-		c.lc.Set(key, info)
+		c.logError(c.lc.Set(key, info))
 		return info, nil
 	}
 
@@ -67,7 +70,7 @@ func (c *CustomerRepoCacheImpl) GetCustomerPersonalInfo(ctx context.Context, cus
 		return nil, err
 	}
 
-	c.rc.Set(ctx, key, info)
+	c.logError(c.rc.Set(ctx, key, info))
 	return info, nil
 }
 
@@ -82,7 +85,7 @@ func (c *CustomerRepoCacheImpl) GetCustomerShippingInfo(ctx context.Context, cus
 
 	ok, err = c.rc.Get(ctx, key, info)
 	if ok && err == nil {
-		c.lc.Set(key, info)
+		c.logError(c.lc.Set(key, info))
 		return info, nil
 	}
 
@@ -95,7 +98,7 @@ func (c *CustomerRepoCacheImpl) GetCustomerShippingInfo(ctx context.Context, cus
 
 	ok, err = c.rc.Get(ctx, key, info)
 	if ok && err == nil {
-		c.lc.Set(key, info)
+		c.logError(c.lc.Set(key, info))
 		return info, nil
 	}
 
@@ -104,7 +107,7 @@ func (c *CustomerRepoCacheImpl) GetCustomerShippingInfo(ctx context.Context, cus
 		return nil, err
 	}
 
-	c.rc.Set(ctx, key, info)
+	c.logError(c.rc.Set(ctx, key, info))
 	return info, nil
 }
 
@@ -118,7 +121,7 @@ func (c *CustomerRepoCacheImpl) UpdateCustomerPersonalInfo(ctx context.Context, 
 	if err := c.rc.Delete(ctx, personalInfoKey); err != nil {
 		return err
 	}
-	if err := c.rc.Publish(ctx, config.InvalidationTopic, &[]string{personalInfoKey}); err != nil {
+	if err := c.rc.Publish(ctx, conf.InvalidationTopic, &[]string{personalInfoKey}); err != nil {
 		return err
 	}
 	return nil
@@ -134,8 +137,15 @@ func (c *CustomerRepoCacheImpl) UpdateCustomerShippingInfo(ctx context.Context, 
 	if err := c.rc.Delete(ctx, shippingInfoKey); err != nil {
 		return err
 	}
-	if err := c.rc.Publish(ctx, config.InvalidationTopic, &[]string{shippingInfoKey}); err != nil {
+	if err := c.rc.Publish(ctx, conf.InvalidationTopic, &[]string{shippingInfoKey}); err != nil {
 		return err
 	}
 	return nil
+}
+
+func (c *CustomerRepoCacheImpl) logError(err error) {
+	if err == nil {
+		return
+	}
+	c.logger.Error(err)
 }
