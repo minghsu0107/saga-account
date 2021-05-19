@@ -24,7 +24,7 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0 // indirect
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/kr/text v0.2.0 // indirect
-	github.com/minghsu0107/saga-pb v0.4.0
+	github.com/minghsu0107/saga-pb v0.5.0
 	github.com/minghsu0107/saga-purchase v0.0.0-20210405185204-071a9d2f6240
 	github.com/onsi/ginkgo v1.15.2
 	github.com/onsi/gomega v1.11.0
@@ -41,7 +41,7 @@ require (
 	golang.org/x/sys v0.0.0-20210514084401-e8d321eab015 // indirect
 	golang.org/x/tools v0.1.1 // indirect
 	google.golang.org/api v0.41.0 // indirect
-	google.golang.org/genproto v0.0.0-20210513213006-bf773b8c8384 // indirect
+	google.golang.org/genproto v0.0.0-20210518161634-ec7691c0a37d // indirect
 	google.golang.org/grpc v1.37.1
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/yaml.v2 v2.4.0

@@ -375,6 +375,8 @@ github.com/minghsu0107/saga-pb v0.3.0 h1:nFcb9upZEKocZtHyiO6AwgIkpnq9g1pAjro449S
 github.com/minghsu0107/saga-pb v0.3.0/go.mod h1:tVhLMJ7xRWSBH3sUl2ihheMRgVgfhqcE4Qr602ojho8=
 github.com/minghsu0107/saga-pb v0.4.0 h1:YsU5wdvMtJJGzBBFn7RjCo7/PH+LAZOWlWG++G7X2vE=
 github.com/minghsu0107/saga-pb v0.4.0/go.mod h1:tVhLMJ7xRWSBH3sUl2ihheMRgVgfhqcE4Qr602ojho8=
+github.com/minghsu0107/saga-pb v0.5.0 h1:LV2hjGtYuNL5IgMFIr3IBzs75fIxVQO4MgHTf4ADNRQ=
+github.com/minghsu0107/saga-pb v0.5.0/go.mod h1:tVhLMJ7xRWSBH3sUl2ihheMRgVgfhqcE4Qr602ojho8=
 github.com/minghsu0107/saga-purchase v0.0.0-20210405185204-071a9d2f6240 h1:rHdQLYNY2Y99huVq24MdumyW9duC5mIjd4McKOXRxws=
 github.com/minghsu0107/saga-purchase v0.0.0-20210405185204-071a9d2f6240/go.mod h1:1ilab3rSUnhtL9FNqTGQrLFhX22vfM9vAWdlKFAppZ8=
 github.com/mitchellh/cli v1.0.0/go.mod h1:hNIlj7HEI86fIcpObd7a0FcrxTWetlwJDGcceTlRvqc=
@@ -946,6 +948,8 @@ google.golang.org/genproto v0.0.0-20210331142528-b7513248f0ba h1:tRxOO808//a0cjd
 google.golang.org/genproto v0.0.0-20210331142528-b7513248f0ba/go.mod h1:9lPAdzaEmUacj36I+k7YKbEc5CXzPIeORRgDAUOu28A=
 google.golang.org/genproto v0.0.0-20210513213006-bf773b8c8384 h1:z+j74wi4yV+P7EtK9gPLGukOk7mFOy9wMQaC0wNb7eY=
 google.golang.org/genproto v0.0.0-20210513213006-bf773b8c8384/go.mod h1:P3QM42oQyzQSnHPnZ/vqoCdDmzH28fzWByN9asMeM8A=
+google.golang.org/genproto v0.0.0-20210518161634-ec7691c0a37d h1:bRz6UmsZEz/CzoTjUDp4ZcdguhSWi6CyU299wMQBpZU=
+google.golang.org/genproto v0.0.0-20210518161634-ec7691c0a37d/go.mod h1:P3QM42oQyzQSnHPnZ/vqoCdDmzH28fzWByN9asMeM8A=
 google.golang.org/grpc v1.17.0/go.mod h1:6QZJwpn2B+Zp71q/5VxRsJ6NXXVCE5NRUHRo+f3cWCs=
 google.golang.org/grpc v1.19.0/go.mod h1:mqu4LbDTu4XGKhr4mRzUsmM4RtVoemTSY81AxZiDr8c=
 google.golang.org/grpc v1.20.0/go.mod h1:chYK+tFQF0nDUGJgXMSgLCQk3phJEuONr2DCgLDdAQM=
