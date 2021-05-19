@@ -377,6 +377,8 @@ github.com/minghsu0107/saga-pb v0.4.0 h1:YsU5wdvMtJJGzBBFn7RjCo7/PH+LAZOWlWG++G7
 github.com/minghsu0107/saga-pb v0.4.0/go.mod h1:tVhLMJ7xRWSBH3sUl2ihheMRgVgfhqcE4Qr602ojho8=
 github.com/minghsu0107/saga-pb v0.5.0 h1:LV2hjGtYuNL5IgMFIr3IBzs75fIxVQO4MgHTf4ADNRQ=
 github.com/minghsu0107/saga-pb v0.5.0/go.mod h1:tVhLMJ7xRWSBH3sUl2ihheMRgVgfhqcE4Qr602ojho8=
+github.com/minghsu0107/saga-pb v0.5.1 h1:3k+cCmu2E9Wdqos04z6g23Ipx1ZjMuxPFoR2glMfr1g=
+github.com/minghsu0107/saga-pb v0.5.1/go.mod h1:tVhLMJ7xRWSBH3sUl2ihheMRgVgfhqcE4Qr602ojho8=
 github.com/minghsu0107/saga-purchase v0.0.0-20210405185204-071a9d2f6240 h1:rHdQLYNY2Y99huVq24MdumyW9duC5mIjd4McKOXRxws=
 github.com/minghsu0107/saga-purchase v0.0.0-20210405185204-071a9d2f6240/go.mod h1:1ilab3rSUnhtL9FNqTGQrLFhX22vfM9vAWdlKFAppZ8=
 github.com/mitchellh/cli v1.0.0/go.mod h1:hNIlj7HEI86fIcpObd7a0FcrxTWetlwJDGcceTlRvqc=
