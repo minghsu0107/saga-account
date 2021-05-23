@@ -42,7 +42,7 @@ func NewEngine(config *conf.Config) *gin.Engine {
 
 	mdlw := prommiddleware.New(prommiddleware.Config{
 		Recorder: metrics.NewRecorder(metrics.Config{
-			Prefix: config.AppName,
+			Prefix: config.App,
 		}),
 	})
 	engine.Use(ginmiddleware.Handler("", mdlw))

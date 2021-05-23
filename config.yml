@@ -1,7 +1,9 @@
+app: "account"
+ginMode: "debug"
 httpPort: 80
 grpcPort: 8000
-appName: "account"
-ginMode: "debug"
+promPort: 8080
+ocAgentHost: ""
 jwtConfig:
   secret: "93c61a11-a4f6-42fc-a995-4f1c850822bb"
   accessTokenExpireSecond: 300
