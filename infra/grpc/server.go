@@ -2,7 +2,6 @@ package grpc
 
 import (
 	"net"
-	"os"
 	"time"
 
 	"github.com/minghsu0107/saga-account/service/auth"
@@ -57,7 +56,7 @@ func NewGRPCServer(config *config.Config, jwtAuthSvc auth.JWTAuthService) *Serve
 			Timeout:               1 * time.Second,   // wait 1 second for the ping ack before assuming the connection is dead
 		}),
 	}
-	if os.Getenv("OC_AGENT_HOST") != "" {
+	if config.OcAgentHost != "" {
 		opts = append(opts, grpc.StatsHandler(&ocgrpc.ServerHandler{}))
 	}
 
