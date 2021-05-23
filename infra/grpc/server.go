@@ -93,6 +93,7 @@ func NewGRPCServer(config *config.Config, jwtAuthSvc auth.JWTAuthService) *Serve
 	srv.s = grpc.NewServer(opts...)
 	pb.RegisterAuthServiceServer(srv.s, srv)
 
+	grpc_prometheus.Register(srv.s)
 	reflection.Register(srv.s)
 	return srv
 }
