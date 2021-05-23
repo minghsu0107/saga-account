@@ -2,56 +2,18 @@ package main
 
 import (
 	"context"
-	"fmt"
-	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
-	"contrib.go.opencensus.io/exporter/ocagent"
 	"github.com/minghsu0107/saga-account/dep"
 	"github.com/minghsu0107/saga-account/infra/cache"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
-	"go.opencensus.io/trace"
-)
-
-var (
-	promPort    = os.Getenv("PROM_PORT")
-	ocagentHost = os.Getenv("OC_AGENT_HOST")
 )
 
 func main() {
 	errs := make(chan error, 1)
-	if ocagentHost != "" {
-		oce, err := ocagent.NewExporter(
-			ocagent.WithInsecure(),
-			ocagent.WithReconnectionPeriod(5*time.Second),
-			ocagent.WithAddress(ocagentHost),
-			ocagent.WithServiceName("account"))
-		if err != nil {
-			log.Fatalf("failed to create ocagent-exporter: %v", err)
-		}
-		trace.RegisterExporter(oce)
-		/*
-			// if parant span is sampled, the current is also sampled
-			// despite the sampling configuration in order to obtain full span tree
-			trace.ApplyConfig(trace.Config{
-				// If not specified, then sampler would be set to ProbabilitySampler(defaultSamplingProbability)
-				// defaultSamplingProbability is 1e-4
-				// DefaultSampler: trace.NeverSample(),
-			})
-		*/
-	}
-	if promPort != "" {
-		go func() {
-			log.Infof("starting prom metrics on PROM_PORT=[%s]", promPort)
-			http.Handle("/metrics", promhttp.Handler())
-			err := http.ListenAndServe(fmt.Sprintf(":%s", promPort), nil)
-			errs <- err
-		}()
-	}
 
 	migrator, err := dep.InitializeMigrator()
 	if err != nil {

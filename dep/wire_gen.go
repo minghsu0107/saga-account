@@ -13,6 +13,7 @@ import (
 	"github.com/minghsu0107/saga-account/infra/grpc"
 	"github.com/minghsu0107/saga-account/infra/http"
 	"github.com/minghsu0107/saga-account/infra/http/middleware"
+	pkg2 "github.com/minghsu0107/saga-account/infra/observe"
 	"github.com/minghsu0107/saga-account/pkg"
 	"github.com/minghsu0107/saga-account/repo"
 	"github.com/minghsu0107/saga-account/repo/proxy"
@@ -55,8 +56,12 @@ func InitializeServer() (*infra.Server, error) {
 	jwtAuthChecker := middleware.NewJWTAuthChecker(configConfig, jwtAuthService)
 	server := http.NewServer(configConfig, engine, router, jwtAuthChecker)
 	grpcServer := grpc.NewGRPCServer(configConfig, jwtAuthService)
+	observibilityInjector, err := pkg2.NewObservibilityInjector(configConfig)
+	if err != nil {
+		return nil, err
+	}
 	localCacheCleaner := cache.NewLocalCacheCleaner(clusterClient, localCache)
-	infraServer := infra.NewServer(server, grpcServer, localCacheCleaner)
+	infraServer := infra.NewServer(server, grpcServer, observibilityInjector, localCacheCleaner)
 	return infraServer, nil
 }
 
