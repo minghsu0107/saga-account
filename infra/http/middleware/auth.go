@@ -8,8 +8,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/minghsu0107/saga-account/config"
 	"github.com/minghsu0107/saga-account/domain/model"
+	"github.com/minghsu0107/saga-account/infra/http/presenter"
 	"github.com/minghsu0107/saga-account/service/auth"
-	"github.com/minghsu0107/saga-purchase/infra/http/presenter"
 
 	log "github.com/sirupsen/logrus"
 )
