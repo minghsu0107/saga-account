@@ -43,7 +43,7 @@ func InitializeServer() (*infra.Server, error) {
 		return nil, err
 	}
 	redisCache := cache.NewRedisCache(configConfig, clusterClient)
-	jwtAuthRepoCache := proxy.NewJWTAuthRepoCache(jwtAuthRepository, localCache, redisCache)
+	jwtAuthRepoCache := proxy.NewJWTAuthRepoCache(configConfig, jwtAuthRepository, localCache, redisCache)
 	idGenerator, err := pkg.NewSonyFlake()
 	if err != nil {
 		return nil, err

@@ -75,7 +75,7 @@ var _ = BeforeSuite(func() {
 	lc, _ = cache.NewLocalCache(config)
 	rc = cache.NewRedisCache(config, client)
 	customerRepoCache = NewCustomerRepoCache(config, mockCustomerRepo, lc, rc)
-	jwtAuthRepoCache = NewJWTAuthRepoCache(mockJWTAuthRepo, lc, rc)
+	jwtAuthRepoCache = NewJWTAuthRepoCache(config, mockJWTAuthRepo, lc, rc)
 	cleaner = cache.NewLocalCacheCleaner(client, lc)
 	go func() {
 		err := cleaner.SubscribeInvalidationEvent()

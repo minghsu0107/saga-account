@@ -77,7 +77,7 @@ func (svc *JWTAuthServiceImpl) SignUp(ctx context.Context, customer *model.Custo
 	customer.Active = true
 	if err := svc.jwtAuthRepo.CreateCustomer(ctx, customer); err != nil {
 		if err != repo.ErrDuplicateEntry {
-			svc.logger.Error(err)
+			svc.logger.Error(err.Error())
 		}
 		return "", "", err
 	}
@@ -88,7 +88,7 @@ func (svc *JWTAuthServiceImpl) SignUp(ctx context.Context, customer *model.Custo
 func (svc *JWTAuthServiceImpl) Login(ctx context.Context, email string, password string) (string, string, error) {
 	exist, credentials, err := svc.jwtAuthRepo.GetCustomerCredentials(ctx, email)
 	if err != nil {
-		svc.logger.Error(err)
+		svc.logger.Error(err.Error())
 		return "", "", err
 	}
 	if !exist {
@@ -143,13 +143,13 @@ func (svc *JWTAuthServiceImpl) newTokenPair(customerID uint64) (string, string, 
 	accessTokenExpiredAt := now.Add(time.Duration(svc.accessTokenExpireSecond) * time.Second).Unix()
 	accessToken, err := newJWT(customerID, accessTokenExpiredAt, svc.jwtSecret, false)
 	if err != nil {
-		svc.logger.Error(err)
+		svc.logger.Error(err.Error())
 		return "", "", err
 	}
 	refreshTokenExpiredAt := now.Add(time.Duration(svc.refreshTokenExpireSecond) * time.Second).Unix()
 	refreshToken, err := newJWT(customerID, refreshTokenExpiredAt, svc.jwtSecret, true)
 	if err != nil {
-		svc.logger.Error(err)
+		svc.logger.Error(err.Error())
 		return "", "", err
 	}
 	return accessToken, refreshToken, nil

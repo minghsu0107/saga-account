@@ -31,7 +31,7 @@ func (svc *CustomerServiceImpl) GetCustomerPersonalInfo(ctx context.Context, cus
 	info, err := svc.customerRepo.GetCustomerPersonalInfo(ctx, customerID)
 	if err != nil {
 		if err != repo.ErrCustomerNotFound {
-			svc.logger.Error(err)
+			svc.logger.Error(err.Error())
 		}
 		return nil, err
 	}
@@ -47,7 +47,7 @@ func (svc *CustomerServiceImpl) GetCustomerShippingInfo(ctx context.Context, cus
 	info, err := svc.customerRepo.GetCustomerShippingInfo(ctx, customerID)
 	if err != nil {
 		if err != repo.ErrCustomerNotFound {
-			svc.logger.Error(err)
+			svc.logger.Error(err.Error())
 		}
 		return nil, err
 	}

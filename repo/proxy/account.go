@@ -33,7 +33,7 @@ func NewCustomerRepoCache(config *conf.Config, repo repo.CustomerRepository, lc 
 		repo:   repo,
 		lc:     lc,
 		rc:     rc,
-		logger: config.Logger.ContextLogger.WithField("type", "cache"),
+		logger: config.Logger.ContextLogger.WithField("type", "cache:CustomerRepoCache"),
 	}
 }
 
@@ -147,5 +147,5 @@ func (c *CustomerRepoCacheImpl) logError(err error) {
 	if err == nil {
 		return
 	}
-	c.logger.Error(err)
+	c.logger.Error(err.Error())
 }

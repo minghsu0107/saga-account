@@ -4,10 +4,12 @@ import (
 	"context"
 	"strconv"
 
+	conf "github.com/minghsu0107/saga-account/config"
 	domain_model "github.com/minghsu0107/saga-account/domain/model"
 	"github.com/minghsu0107/saga-account/infra/cache"
 	"github.com/minghsu0107/saga-account/pkg"
 	"github.com/minghsu0107/saga-account/repo"
+	"github.com/sirupsen/logrus"
 )
 
 // JWTAuthRepoCache is the JWT Auth repo cache interface
@@ -19,9 +21,10 @@ type JWTAuthRepoCache interface {
 
 // JWTAuthRepoCacheImpl is the JWT Auth repo cache proxy
 type JWTAuthRepoCacheImpl struct {
-	repo repo.JWTAuthRepository
-	lc   cache.LocalCache
-	rc   cache.RedisCache
+	repo   repo.JWTAuthRepository
+	lc     cache.LocalCache
+	rc     cache.RedisCache
+	logger *logrus.Entry
 }
 
 // RedisCustomerCheck it the customer auth structure stored in redis
@@ -38,11 +41,12 @@ type RedisCustomerCredentials struct {
 	BcryptedPassword string `redis:"bcrypted_password"`
 }
 
-func NewJWTAuthRepoCache(repo repo.JWTAuthRepository, lc cache.LocalCache, rc cache.RedisCache) JWTAuthRepoCache {
+func NewJWTAuthRepoCache(config *conf.Config, repo repo.JWTAuthRepository, lc cache.LocalCache, rc cache.RedisCache) JWTAuthRepoCache {
 	return &JWTAuthRepoCacheImpl{
-		repo: repo,
-		lc:   lc,
-		rc:   rc,
+		repo:   repo,
+		lc:     lc,
+		rc:     rc,
+		logger: config.Logger.ContextLogger.WithField("type", "cache:JWTAuthRepoCache"),
 	}
 }
 
@@ -57,7 +61,7 @@ func (c *JWTAuthRepoCacheImpl) CheckCustomer(ctx context.Context, customerID uin
 
 	ok, err = c.rc.Get(ctx, key, check)
 	if ok && err == nil {
-		c.lc.Set(key, check)
+		c.logError(c.lc.Set(key, check))
 		return check.Exist, check.Active, nil
 	}
 
@@ -70,7 +74,7 @@ func (c *JWTAuthRepoCacheImpl) CheckCustomer(ctx context.Context, customerID uin
 
 	ok, err = c.rc.Get(ctx, key, check)
 	if ok && err == nil {
-		c.lc.Set(key, check)
+		c.logError(c.lc.Set(key, check))
 		return check.Exist, check.Active, nil
 	}
 	exist, active, err := c.repo.CheckCustomer(ctx, customerID)
@@ -78,10 +82,10 @@ func (c *JWTAuthRepoCacheImpl) CheckCustomer(ctx context.Context, customerID uin
 		return false, false, err
 	}
 
-	c.rc.Set(ctx, key, &RedisCustomerCheck{
+	c.logError(c.rc.Set(ctx, key, &RedisCustomerCheck{
 		Exist:  exist,
 		Active: active,
-	})
+	}))
 	return exist, active, nil
 }
 
@@ -96,7 +100,7 @@ func (c *JWTAuthRepoCacheImpl) GetCustomerCredentials(ctx context.Context, email
 
 	ok, err = c.rc.Get(ctx, key, credentials)
 	if ok && err == nil {
-		c.lc.Set(key, credentials)
+		c.logError(c.lc.Set(key, credentials))
 		return credentials.Exist, mapCredentials(credentials), nil
 	}
 
@@ -109,7 +113,7 @@ func (c *JWTAuthRepoCacheImpl) GetCustomerCredentials(ctx context.Context, email
 
 	ok, err = c.rc.Get(ctx, key, credentials)
 	if ok && err == nil {
-		c.lc.Set(key, credentials)
+		c.logError(c.lc.Set(key, credentials))
 		return credentials.Exist, mapCredentials(credentials), nil
 	}
 
@@ -122,13 +126,20 @@ func (c *JWTAuthRepoCacheImpl) GetCustomerCredentials(ctx context.Context, email
 		repoCredentials = &repo.CustomerCredentials{}
 	}
 
-	c.rc.Set(ctx, key, &RedisCustomerCredentials{
+	c.logError(c.rc.Set(ctx, key, &RedisCustomerCredentials{
 		Exist:            exist,
 		ID:               repoCredentials.ID,
 		Active:           repoCredentials.Active,
 		BcryptedPassword: repoCredentials.BcryptedPassword,
-	})
+	}))
 	return exist, repoCredentials, nil
+}
+
+func (c *JWTAuthRepoCacheImpl) logError(err error) {
+	if err == nil {
+		return
+	}
+	c.logger.Error(err.Error())
 }
 
 func (c *JWTAuthRepoCacheImpl) CreateCustomer(ctx context.Context, customer *domain_model.Customer) error {

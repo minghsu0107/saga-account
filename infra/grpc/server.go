@@ -69,7 +69,7 @@ func NewGRPCServer(config *config.Config, jwtAuthSvc auth.JWTAuthService) *Serve
 		}),
 	}
 	logrusEntry := *config.Logger.ContextLogger
-	grpc_logrus.ReplaceGrpcLogger(&logrusEntry)
+	//grpc_logrus.ReplaceGrpcLogger(&logrusEntry)
 
 	opts = append(opts,
 		grpc.StreamInterceptor(grpc_middleware.ChainStreamServer(
