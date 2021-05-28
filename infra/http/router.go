@@ -92,7 +92,7 @@ func (r *Router) RefreshToken(c *gin.Context) {
 		response(c, http.StatusBadRequest, presenter.ErrInvalidParam)
 		return
 	}
-	newAccessToken, newRefreshToken, err := r.authSvc.RefreshToken(c.Request.Context(), refreshToken.Token)
+	newAccessToken, newRefreshToken, err := r.authSvc.RefreshToken(c.Request.Context(), refreshToken.RefreshToken)
 	switch err {
 	case auth.ErrInvalidToken:
 		response(c, http.StatusUnauthorized, auth.ErrInvalidToken)
@@ -104,8 +104,8 @@ func (r *Router) RefreshToken(c *gin.Context) {
 		response(c, http.StatusUnauthorized, auth.ErrCustomerInactive)
 	case nil:
 		c.JSON(http.StatusOK, &presenter.TokenPair{
-			RefreshToken: newAccessToken,
-			AccessToken:  newRefreshToken,
+			RefreshToken: newRefreshToken,
+			AccessToken:  newAccessToken,
 		})
 	default:
 		response(c, http.StatusInternalServerError, presenter.ErrServer)

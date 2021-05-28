@@ -18,7 +18,7 @@ type LoginCustomer struct {
 
 // RefreshToken request payload
 type RefreshToken struct {
-	Token string `json:"token" binding:"required"`
+	RefreshToken string `json:"refresh_token" binding:"required"`
 }
 
 // TokenPair response payload
