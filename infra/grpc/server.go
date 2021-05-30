@@ -82,6 +82,7 @@ func NewGRPCServer(config *config.Config, jwtAuthSvc auth.JWTAuthService) *Serve
 			grpc_prometheus.UnaryServerInterceptor,
 			grpc_ctxtags.UnaryServerInterceptor(grpc_ctxtags.WithFieldExtractor(grpc_ctxtags.CodeGenRequestFieldExtractor)),
 			grpc_logrus.UnaryServerInterceptor(&logrusEntry, grpcOpts...),
+			LogTraceUnary(),
 			grpc_recovery.UnaryServerInterceptor(recoveryOpts...),
 		)),
 	)
