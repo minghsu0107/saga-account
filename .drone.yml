@@ -42,6 +42,9 @@ steps:
   image: mysql:8.0
   commands:
   - /bin/sh -c 'until mysql -hmysql -uming -ppassword; do echo "Waiting for db..."; sleep 1; done'
+  when:
+    event:
+    - push
 - name: test
   pull: if-not-exists
   image: golang:1.15.2
@@ -52,6 +55,9 @@ steps:
   - make test
   depends_on:
     - pingdb
+  when:
+    event:
+    - push
 - name: push-registry
   <<: *x-build-docker-image
   settings:
@@ -66,3 +72,35 @@ steps:
 trigger:
   branch:
   - main
+
+---
+kind: pipeline
+type: docker
+name: release
+
+platform:
+  os: linux
+  arch: amd64
+
+x-build-docker-image: &x-build-docker-image
+  image: plugins/docker
+  settings:
+    custom_labels:
+    - 'BUILD_NUMBER=${DRONE_BUILD_NUMBER}'
+    - 'BUILD_SHA=${DRONE_COMMIT_SHA}'
+    tags:
+      - ${DRONE_TAG}
+    username:
+      from_secret: docker_username
+    password:
+      from_secret: docker_password
+steps:
+- name: push-registry
+  <<: *x-build-docker-image
+  settings:
+    repo: minghsu0107/saga-account
+    dockerfile: Dockerfile
+    context: .
+  when:
+    event:
+    - tag
