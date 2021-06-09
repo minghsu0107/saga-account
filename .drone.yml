@@ -26,7 +26,6 @@ services:
 x-build-docker-image: &x-build-docker-image
   image: plugins/docker
   settings:
-    auto_tag: true
     custom_labels:
     - 'BUILD_NUMBER=${DRONE_BUILD_NUMBER}'
     - 'BUILD_SHA=${DRONE_COMMIT_SHA}'
@@ -79,6 +78,8 @@ steps:
 - name: release
   <<: *x-build-docker-image
   settings:
+    tags:
+      - ${DRONE_TAG}
     repo: minghsu0107/saga-account
     dockerfile: Dockerfile
     context: .
