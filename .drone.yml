@@ -26,6 +26,7 @@ services:
 x-build-docker-image: &x-build-docker-image
   image: plugins/docker
   settings:
+    auto_tag: true
     custom_labels:
     - 'BUILD_NUMBER=${DRONE_BUILD_NUMBER}'
     - 'BUILD_SHA=${DRONE_COMMIT_SHA}'
