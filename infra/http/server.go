@@ -74,8 +74,8 @@ func (s *Server) RegisterRoutes() {
 		{
 			withJWT.GET("/account", s.Router.GetCustomerPersonalInfo)
 			withJWT.GET("/shipping", s.Router.GetCustomerShippingInfo)
-			withJWT.POST("/account", s.Router.UpdateCustomerPersonalInfo)
-			withJWT.POST("/shipping", s.Router.UpdateCustomerShippingInfo)
+			withJWT.PUT("/account", s.Router.UpdateCustomerPersonalInfo)
+			withJWT.PUT("/shipping", s.Router.UpdateCustomerShippingInfo)
 		}
 	}
 }
