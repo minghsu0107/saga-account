@@ -15,6 +15,7 @@ Features:
 - Compile-time dependecy injection using [wire](https://github.com/google/wire)
 - Graceful shutdown
 - Unit testing and continuous integration using [Drone CI](https://www.drone.io)
+
 ## Usage
 Build from source:
 ```bash
@@ -30,6 +31,13 @@ JWT_ACCESS_TOKEN_EXPIRE_SECOND=10800 \
 JWT_REFRESH_TOKEN_EXPIRE_SECOND=86400 \
 OC_AGENT_HOST=oc-collector:55678 \
 ./server
+```
+Test locally:
+```bash
+DB_DSN="ming:password@tcp(accountdb:3306)/account?charset=utf8mb4&parseTime=True&loc=Local" \
+REDIS_ADDRS=redis-node1:7000,redis-node2:7001,redis-node3:7002,redis-node4:7003,redis-node5:7004,redis-node6:7005 \
+REDIS_PASSWORD=myredispassword \
+make test
 ```
 - `DB_DSN`: MySQL connection DSN.
 - `REDIS_ADDRS`: Redis seed server addresses
