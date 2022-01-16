@@ -34,9 +34,7 @@ OC_AGENT_HOST=oc-collector:55678 \
 ```
 Test locally:
 ```bash
-DB_DSN="ming:password@tcp(accountdb:3306)/account?charset=utf8mb4&parseTime=True&loc=Local" \
-REDIS_ADDRS=redis-node1:7000,redis-node2:7001,redis-node3:7002,redis-node4:7003,redis-node5:7004,redis-node6:7005 \
-REDIS_PASSWORD=myredispassword \
+DB_DSN="ming:password@tcp(<mysql-host>:3306)/account?charset=utf8mb4&parseTime=True&loc=Local" \
 make test
 ```
 - `DB_DSN`: MySQL connection DSN.
