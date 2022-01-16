@@ -19,7 +19,7 @@ pretest: mockgen
 	$(shell $(GOCMD) env GOPATH)/bin/mockgen -source=service/account/interface.go -destination=mock/service/account.go -package=mock_service
 	$(shell $(GOCMD) env GOPATH)/bin/mockgen -source=service/auth/interface.go -destination=mock/service/auth.go -package=mock_service
 runtest:
-	$(GOTEST) -v ./...
+	$(GOTEST) -gcflags=-l -v -cover -coverpkg=./... -coverprofile=cover.out ./...
 dep: wire
 	$(shell $(GOCMD) env GOPATH)/bin/wire ./dep
 
