@@ -61,7 +61,7 @@ func NewServer(config *conf.Config, engine *gin.Engine, router *Router, jwtAuthC
 
 // RegisterRoutes method register all endpoints
 func (s *Server) RegisterRoutes() {
-	apiGroup := s.Engine.Group("/api")
+	apiGroup := s.Engine.Group("/api/account")
 	{
 		authGroup := apiGroup.Group("/auth")
 		{
@@ -72,9 +72,9 @@ func (s *Server) RegisterRoutes() {
 		withJWT := apiGroup.Group("/info")
 		withJWT.Use(s.jwtAuthChecker.JWTAuth())
 		{
-			withJWT.GET("/account", s.Router.GetCustomerPersonalInfo)
+			withJWT.GET("/person", s.Router.GetCustomerPersonalInfo)
 			withJWT.GET("/shipping", s.Router.GetCustomerShippingInfo)
-			withJWT.PUT("/account", s.Router.UpdateCustomerPersonalInfo)
+			withJWT.PUT("/person", s.Router.UpdateCustomerPersonalInfo)
 			withJWT.PUT("/shipping", s.Router.UpdateCustomerShippingInfo)
 		}
 	}
