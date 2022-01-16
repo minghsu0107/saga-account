@@ -17,9 +17,12 @@ Features:
 - Unit testing and continuous integration using [Drone CI](https://www.drone.io)
 
 ## Usage
+Setup githooks:
+```bash=
+git config core.hooksPath githooks
+```
 Build from source:
 ```bash
-go mod tidy
 make build
 ```
 Start the service:
