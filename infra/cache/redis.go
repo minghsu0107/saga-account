@@ -18,8 +18,8 @@ var (
 	RedisClient *redis.ClusterClient
 	//ErrRedisUnlockFail is redis unlock fail error
 	ErrRedisUnlockFail = errors.New("redis unlock fail")
-	// ErrRedisCmdNotFound is redis command not found error
-	ErrRedisCmdNotFound = errors.New("redis command not found; supports only SET and DELETE")
+	// ErrRedisPipelineCmdNotFound is redis command not found error
+	ErrRedisPipelineCmdNotFound = errors.New("redis pipeline command not found; supports only SET and DELETE")
 )
 
 // RedisCache is the interface of redis cache
@@ -184,7 +184,7 @@ func (rc *RedisCacheImpl) ExecPipeLine(ctx context.Context, cmds *[]RedisCmd) er
 				Cmd:    pipe.Del(ctx, cmd.Payload.(RedisDeletePayload).Key),
 			})
 		default:
-			return ErrRedisCmdNotFound
+			return ErrRedisPipelineCmdNotFound
 		}
 	}
 	_, err := pipe.Exec(ctx)
