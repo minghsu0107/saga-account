@@ -48,6 +48,7 @@ func (c *CustomerRepoCacheImpl) GetCustomerPersonalInfo(ctx context.Context, cus
 
 	ok, err = c.rc.Get(ctx, key, info)
 	if ok && err == nil {
+		// may set stale data here unless we acquire lock at expense of lower throughput
 		c.logError(c.lc.Set(key, info))
 		return info, nil
 	}
