@@ -20,12 +20,12 @@ type LocalCacheCleaner interface {
 
 // LocalCacheCleanerImpl implements CacheCleaner interface
 type LocalCacheCleanerImpl struct {
-	client *redis.ClusterClient
+	client redis.UniversalClient
 	lc     LocalCache
 	pool   *workerpool.Pool
 }
 
-func NewLocalCacheCleaner(client *redis.ClusterClient, lc LocalCache) LocalCacheCleaner {
+func NewLocalCacheCleaner(client redis.UniversalClient, lc LocalCache) LocalCacheCleaner {
 	return &LocalCacheCleanerImpl{
 		client: client,
 		lc:     lc,

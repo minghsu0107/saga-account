@@ -38,11 +38,11 @@ func InitializeServer() (*infra.Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	clusterClient, err := cache.NewRedisClient(configConfig)
+	universalClient, err := cache.NewRedisClient(configConfig)
 	if err != nil {
 		return nil, err
 	}
-	redisCache := cache.NewRedisCache(configConfig, clusterClient)
+	redisCache := cache.NewRedisCache(configConfig, universalClient)
 	jwtAuthRepoCache := proxy.NewJWTAuthRepoCache(configConfig, jwtAuthRepository, localCache, redisCache)
 	idGenerator, err := pkg.NewSonyFlake()
 	if err != nil {
@@ -60,7 +60,7 @@ func InitializeServer() (*infra.Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	localCacheCleaner := cache.NewLocalCacheCleaner(clusterClient, localCache)
+	localCacheCleaner := cache.NewLocalCacheCleaner(universalClient, localCache)
 	infraServer := infra.NewServer(server, grpcServer, observibilityInjector, localCacheCleaner)
 	return infraServer, nil
 }

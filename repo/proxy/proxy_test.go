@@ -27,7 +27,6 @@ var (
 	customerRepoCache CustomerRepoCache
 	mockJWTAuthRepo   *mock_repo.MockJWTAuthRepository
 	jwtAuthRepoCache  JWTAuthRepoCache
-	client            *redis.ClusterClient
 	lc                cache.LocalCache
 	rc                cache.RedisCache
 	cleaner           cache.LocalCacheCleaner
@@ -69,14 +68,14 @@ var _ = BeforeSuite(func() {
 		},
 	}
 	s := NewMiniRedis()
-	client = redis.NewClusterClient(&redis.ClusterOptions{
+	cache.RedisClient = redis.NewClusterClient(&redis.ClusterOptions{
 		Addrs: []string{s.Addr()},
 	})
 	lc, _ = cache.NewLocalCache(config)
-	rc = cache.NewRedisCache(config, client)
+	rc = cache.NewRedisCache(config, cache.RedisClient)
 	customerRepoCache = NewCustomerRepoCache(config, mockCustomerRepo, lc, rc)
 	jwtAuthRepoCache = NewJWTAuthRepoCache(config, mockJWTAuthRepo, lc, rc)
-	cleaner = cache.NewLocalCacheCleaner(client, lc)
+	cleaner = cache.NewLocalCacheCleaner(cache.RedisClient, lc)
 	go func() {
 		err := cleaner.SubscribeInvalidationEvent()
 		if err != nil {
@@ -87,7 +86,7 @@ var _ = BeforeSuite(func() {
 
 var _ = AfterSuite(func() {
 	cleaner.Close()
-	client.Close()
+	cache.RedisClient.Close()
 })
 
 var _ = Describe("test cache proxy", func() {
