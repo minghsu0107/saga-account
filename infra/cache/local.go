@@ -60,8 +60,9 @@ func (lc *LocalCacheImpl) Set(key string, val interface{}) error {
 
 // Delete deletes a key
 func (lc *LocalCacheImpl) Delete(key string) error {
-	if err := lc.cache.Delete(key); err != nil {
-		return err
+	err := lc.cache.Delete(key)
+	if err == bigcache.ErrEntryNotFound {
+		return nil
 	}
-	return nil
+	return err
 }
