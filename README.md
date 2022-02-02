@@ -32,7 +32,7 @@ REDIS_ADDRS=redis-node1:7000,redis-node2:7001,redis-node3:7002,redis-node4:7003,
 REDIS_PASSWORD=myredispassword \
 JWT_ACCESS_TOKEN_EXPIRE_SECOND=10800 \
 JWT_REFRESH_TOKEN_EXPIRE_SECOND=86400 \
-OC_AGENT_HOST=oc-collector:55678 \
+JAEGER_URL=http://jaeger:14268/api/traces \
 ./server
 ```
 Test locally:
