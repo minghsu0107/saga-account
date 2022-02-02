@@ -29,7 +29,7 @@ func NewServer(httpServer *infra_http.Server, grpcServer *infra_grpc.Server, obs
 
 // Run server
 func (s *Server) Run() error {
-	errs := make(chan error, 1)
+	errs := make(chan error, 3)
 	s.ObsInjector.Register(errs)
 	go func() {
 		errs <- s.HTTPServer.Run()
