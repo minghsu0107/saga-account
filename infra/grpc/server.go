@@ -71,6 +71,7 @@ func NewGRPCServer(config *config.Config, jwtAuthSvc auth.JWTAuthService) *Serve
 	opts = append(opts,
 		grpc.StreamInterceptor(grpc_middleware.ChainStreamServer(
 			grpc_prometheus.StreamServerInterceptor,
+			otelgrpc.StreamServerInterceptor(),
 			grpc_ctxtags.StreamServerInterceptor(grpc_ctxtags.WithFieldExtractor(grpc_ctxtags.CodeGenRequestFieldExtractor)),
 			grpc_logrus.StreamServerInterceptor(&logrusEntry, grpcOpts...),
 			grpc_recovery.StreamServerInterceptor(recoveryOpts...),
