@@ -49,20 +49,24 @@ func (s *Server) Run() error {
 
 // GracefulStop server
 func (s *Server) GracefulStop(ctx context.Context, done chan bool) {
-	errs := make(chan error, 1)
-	go func() {
-		errs <- s.HTTPServer.GracefulStop(ctx)
-	}()
-	go func() {
-		s.GRPCServer.GracefulStop()
-	}()
-	go func() {
-		s.CacheCleaner.Close()
-	}()
-	err := <-errs
+	err := s.HTTPServer.GracefulStop(ctx)
 	if err != nil {
 		log.Error(err)
 	}
+	s.GRPCServer.GracefulStop()
+	s.CacheCleaner.Close()
+
+	if infra_observe.TracerProvider != nil {
+		err = infra_observe.TracerProvider.Shutdown(ctx)
+		if err != nil {
+			log.Error(err)
+		}
+	}
+	infra_cache.RedisClient.Close()
+
 	log.Info("gracefully shutdowned")
 	done <- true
+}
+
+func (s *Server) Close(ctx context.Context) {
 }

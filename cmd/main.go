@@ -8,13 +8,10 @@ import (
 	"time"
 
 	"github.com/minghsu0107/saga-account/dep"
-	"github.com/minghsu0107/saga-account/infra/cache"
 	log "github.com/sirupsen/logrus"
 )
 
 func main() {
-	errs := make(chan error, 1)
-
 	migrator, err := dep.InitializeMigrator()
 	if err != nil {
 		log.Fatal(err)
@@ -27,8 +24,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer cache.RedisClient.Close()
 
+	errs := make(chan error, 1)
 	go func() {
 		errs <- server.Run()
 	}()

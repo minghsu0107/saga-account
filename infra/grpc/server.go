@@ -7,7 +7,7 @@ import (
 	"github.com/minghsu0107/saga-account/service/auth"
 	log "github.com/sirupsen/logrus"
 
-	"go.opencensus.io/plugin/ocgrpc"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_logrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
@@ -51,9 +51,6 @@ func NewGRPCServer(config *config.Config, jwtAuthSvc auth.JWTAuthService) *Serve
 			Timeout:               1 * time.Second,   // wait 1 second for the ping ack before assuming the connection is dead
 		}),
 	}
-	if config.OcAgentHost != "" {
-		opts = append(opts, grpc.StatsHandler(&ocgrpc.ServerHandler{}))
-	}
 
 	grpc_prometheus.EnableHandlingTimeHistogram()
 
@@ -80,6 +77,7 @@ func NewGRPCServer(config *config.Config, jwtAuthSvc auth.JWTAuthService) *Serve
 		)),
 		grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(
 			grpc_prometheus.UnaryServerInterceptor,
+			otelgrpc.UnaryServerInterceptor(),
 			grpc_ctxtags.UnaryServerInterceptor(grpc_ctxtags.WithFieldExtractor(grpc_ctxtags.CodeGenRequestFieldExtractor)),
 			grpc_logrus.UnaryServerInterceptor(&logrusEntry, grpcOpts...),
 			LogTraceUnary(),
