@@ -17,6 +17,7 @@ import (
 
 // Server is the http wrapper
 type Server struct {
+	App            string
 	Port           string
 	Engine         *gin.Engine
 	Router         *Router
@@ -52,6 +53,7 @@ func NewEngine(config *conf.Config) *gin.Engine {
 // NewServer is the factory for server instance
 func NewServer(config *conf.Config, engine *gin.Engine, router *Router, jwtAuthChecker *middleware.JWTAuthChecker) *Server {
 	return &Server{
+		App:            config.App,
 		Port:           config.HTTPPort,
 		Engine:         engine,
 		Router:         router,
@@ -86,7 +88,7 @@ func (s *Server) Run() error {
 	addr := ":" + s.Port
 	s.svr = &http.Server{
 		Addr:    addr,
-		Handler: otelhttp.NewHandler(s.Engine, "account_http"),
+		Handler: otelhttp.NewHandler(s.Engine, s.App+"_http"),
 	}
 	log.Infoln("http server listening on ", addr)
 	err := s.svr.ListenAndServe()
