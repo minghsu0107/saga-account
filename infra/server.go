@@ -62,7 +62,9 @@ func (s *Server) GracefulStop(ctx context.Context, done chan bool) {
 			log.Error(err)
 		}
 	}
-	infra_cache.RedisClient.Close()
+	if err = infra_cache.RedisClient.Close(); err != nil {
+		log.Error(err)
+	}
 
 	log.Info("gracefully shutdowned")
 	done <- true
