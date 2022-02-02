@@ -13,6 +13,7 @@ import (
 	prommiddleware "github.com/slok/go-http-metrics/middleware"
 	ginmiddleware "github.com/slok/go-http-metrics/middleware/gin"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+	"go.opentelemetry.io/otel"
 )
 
 // Server is the http wrapper
@@ -88,7 +89,7 @@ func (s *Server) Run() error {
 	addr := ":" + s.Port
 	s.svr = &http.Server{
 		Addr:    addr,
-		Handler: otelhttp.NewHandler(s.Engine, s.App+"_http"),
+		Handler: newOtelHandler(s.Engine, s.App+"_http"),
 	}
 	log.Infoln("http server listening on ", addr)
 	err := s.svr.ListenAndServe()
@@ -101,4 +102,12 @@ func (s *Server) Run() error {
 // GracefulStop the server
 func (s *Server) GracefulStop(ctx context.Context) error {
 	return s.svr.Shutdown(ctx)
+}
+
+func newOtelHandler(h http.Handler, operation string) http.Handler {
+	httpOptions := []otelhttp.Option{
+		otelhttp.WithTracerProvider(otel.GetTracerProvider()),
+		otelhttp.WithPropagators(otel.GetTextMapPropagator()),
+	}
+	return otelhttp.NewHandler(h, operation, httpOptions...)
 }
