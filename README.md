@@ -8,7 +8,7 @@ Features:
 - Local + Redis cache
 - Request coalescing to prevent cache avalanche
 - Prometheus metrics
-- Distributed tracing exporter
+- Distributed tracing with [OpenTelemetry](https://opentelemetry.io)
   - HTTP server 
   - gPRC server
 - Comprehensive application struture with domain-driven design (DDD), decoupling service implementations from configurations and transports
