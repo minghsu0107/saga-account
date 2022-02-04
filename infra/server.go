@@ -29,25 +29,28 @@ func NewServer(httpServer *infra_http.Server, grpcServer *infra_grpc.Server, obs
 
 // Run server
 func (s *Server) Run() error {
-	errs := make(chan error, 3)
-	s.ObsInjector.Register(errs)
-	err := <-errs
-	if err != nil {
+	var err error
+	if err = s.ObsInjector.Register(); err != nil {
 		return err
 	}
 	go func() {
-		errs <- s.HTTPServer.Run()
+		err = s.HTTPServer.Run()
+		if err != nil {
+			log.Fatal(err)
+		}
 	}()
 	go func() {
-		errs <- s.GRPCServer.Run()
+		err = s.GRPCServer.Run()
+		if err != nil {
+			log.Fatal(err)
+		}
 	}()
 	go func() {
-		errs <- s.CacheCleaner.SubscribeInvalidationEvent()
+		err = s.CacheCleaner.SubscribeInvalidationEvent()
+		if err != nil {
+			log.Fatal(err)
+		}
 	}()
-	err = <-errs
-	if err != nil {
-		return err
-	}
 	return nil
 }
 

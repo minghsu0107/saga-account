@@ -23,7 +23,7 @@ require (
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/kr/text v0.2.0 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
-	github.com/minghsu0107/saga-pb v0.5.5
+	github.com/minghsu0107/saga-pb v1.0.0
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.18.1
 	github.com/prometheus/client_golang v1.10.0
@@ -41,11 +41,8 @@ require (
 	go.opentelemetry.io/otel/sdk v1.3.0
 	go.opentelemetry.io/otel/trace v1.3.0
 	golang.org/x/crypto v0.0.0-20210322153248-0c34fe9e7dc2
-	golang.org/x/net v0.0.0-20220127200216-cd36cc0744dd // indirect
 	golang.org/x/oauth2 v0.0.0-20210220000619-9bb904979d93 // indirect
-	golang.org/x/sys v0.0.0-20220128215802-99c3d69c2c27 // indirect
-	google.golang.org/genproto v0.0.0-20210524171403-669157292da3 // indirect
-	google.golang.org/grpc v1.42.0
+	google.golang.org/grpc v1.44.0
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 	gorm.io/driver/mysql v1.0.5
