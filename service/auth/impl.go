@@ -9,7 +9,7 @@ import (
 	"github.com/minghsu0107/saga-account/repo"
 	"github.com/minghsu0107/saga-account/repo/proxy"
 
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt/v4"
 	conf "github.com/minghsu0107/saga-account/config"
 	"github.com/minghsu0107/saga-account/domain/model"
 	log "github.com/sirupsen/logrus"
@@ -140,14 +140,14 @@ func (svc *JWTAuthServiceImpl) RefreshToken(ctx context.Context, refreshToken st
 
 func (svc *JWTAuthServiceImpl) newTokenPair(customerID uint64) (string, string, error) {
 	now := time.Now()
-	accessTokenExpiredAt := now.Add(time.Duration(svc.accessTokenExpireSecond) * time.Second).Unix()
-	accessToken, err := newJWT(customerID, accessTokenExpiredAt, svc.jwtSecret, false)
+	accessTokenExpiresAt := now.Add(time.Duration(svc.accessTokenExpireSecond) * time.Second)
+	accessToken, err := newJWT(customerID, accessTokenExpiresAt, svc.jwtSecret, false)
 	if err != nil {
 		svc.logger.Error(err.Error())
 		return "", "", err
 	}
-	refreshTokenExpiredAt := now.Add(time.Duration(svc.refreshTokenExpireSecond) * time.Second).Unix()
-	refreshToken, err := newJWT(customerID, refreshTokenExpiredAt, svc.jwtSecret, true)
+	refreshTokenExpiresAt := now.Add(time.Duration(svc.refreshTokenExpireSecond) * time.Second)
+	refreshToken, err := newJWT(customerID, refreshTokenExpiresAt, svc.jwtSecret, true)
 	if err != nil {
 		svc.logger.Error(err.Error())
 		return "", "", err
@@ -155,12 +155,12 @@ func (svc *JWTAuthServiceImpl) newTokenPair(customerID uint64) (string, string, 
 	return accessToken, refreshToken, nil
 }
 
-func newJWT(customerID uint64, expiredAt int64, jwtSecret string, refresh bool) (string, error) {
+func newJWT(customerID uint64, expiresAt time.Time, jwtSecret string, refresh bool) (string, error) {
 	jwtClaims := &model.JWTClaims{
 		CustomerID: customerID,
 		Refresh:    refresh,
-		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: expiredAt,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(expiresAt),
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwtClaims)

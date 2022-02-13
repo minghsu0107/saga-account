@@ -26,8 +26,6 @@ var (
 type RedisCache interface {
 	Get(ctx context.Context, key string, dst interface{}) (bool, error)
 	Set(ctx context.Context, key string, val interface{}) error
-	HMGet(ctx context.Context, key string, dst interface{}, fields ...string) error
-	HSet(ctx context.Context, key string, values map[string]interface{}) error
 	Delete(ctx context.Context, key string) error
 	GetMutex(mutexname string) *redsync.Mutex
 	ExecPipeLine(ctx context.Context, cmds *[]RedisCmd) error
@@ -141,14 +139,6 @@ func (rc *RedisCacheImpl) Set(ctx context.Context, key string, val interface{}) 
 		return err
 	}
 	return nil
-}
-
-func (rc *RedisCacheImpl) HMGet(ctx context.Context, key string, dst interface{}, fields ...string) error {
-	return rc.client.HMGet(ctx, key, fields...).Scan(dst)
-}
-
-func (rc *RedisCacheImpl) HSet(ctx context.Context, key string, values map[string]interface{}) error {
-	return rc.client.HSet(ctx, key, values).Err()
 }
 
 // Delete deletes a key

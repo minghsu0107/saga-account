@@ -1,6 +1,6 @@
 package model
 
-import "github.com/dgrijalva/jwt-go"
+import "github.com/golang-jwt/jwt/v4"
 
 // AuthPayload value object
 type AuthPayload struct {
@@ -17,5 +17,5 @@ type AuthResponse struct {
 type JWTClaims struct {
 	CustomerID uint64
 	Refresh    bool
-	jwt.StandardClaims
+	jwt.RegisteredClaims
 }

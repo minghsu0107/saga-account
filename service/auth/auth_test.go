@@ -48,7 +48,9 @@ func InitMocks() {
 func NewTestJWTAuthService() JWTAuthService {
 	config := &conf.Config{
 		JWTConfig: &conf.JWTConfig{
-			Secret: testJWTSecret,
+			Secret:                   testJWTSecret,
+			AccessTokenExpireSecond:  100,
+			RefreshTokenExpireSecond: 100,
 		},
 		Logger: &conf.Logger{
 			Writer: ioutil.Discard,
@@ -77,11 +79,12 @@ var _ = Describe("authentication", func() {
 	var authPayload model.AuthPayload
 	BeforeEach(func() {
 		customerID = testCustomerID
+		authPayload = model.AuthPayload{}
 	})
 	var _ = When("token is valid", func() {
 		BeforeEach(func() {
-			expiredAt := time.Now().Add(10 * time.Second).Unix()
-			authPayload.AccessToken, _ = newJWT(customerID, expiredAt, testJWTSecret, false)
+			expiresAt := time.Now().Add(10 * time.Second)
+			authPayload.AccessToken, _ = newJWT(customerID, expiresAt, testJWTSecret, false)
 		})
 		It("should authenticate successfully", func() {
 			authResponse, err := authSvc.Auth(context.Background(), &authPayload)
@@ -94,8 +97,8 @@ var _ = Describe("authentication", func() {
 	})
 	var _ = When("token expires", func() {
 		BeforeEach(func() {
-			expiredAt := time.Now().Add(-10 * time.Second).Unix()
-			authPayload.AccessToken, _ = newJWT(customerID, expiredAt, testJWTSecret, false)
+			expiresAt := time.Now().Add(-10 * time.Second)
+			authPayload.AccessToken, _ = newJWT(customerID, expiresAt, testJWTSecret, false)
 		})
 		It("should success when passing valid access token", func() {
 			authResponse, err := authSvc.Auth(context.Background(), &authPayload)
@@ -116,8 +119,8 @@ var _ = Describe("authentication", func() {
 	})
 	var _ = When("use refresh token as access token", func() {
 		BeforeEach(func() {
-			expiredAt := time.Now().Add(10 * time.Second).Unix()
-			authPayload.AccessToken, _ = newJWT(customerID, expiredAt, testJWTSecret, true)
+			expiresAt := time.Now().Add(10 * time.Second)
+			authPayload.AccessToken, _ = newJWT(customerID, expiresAt, testJWTSecret, true)
 		})
 		It("should fail authentication", func() {
 			_, err := authSvc.Auth(context.Background(), &authPayload)
@@ -130,10 +133,10 @@ var _ = Describe("authentication", func() {
 		var _ = When("refresh token hasn't expire", func() {
 			BeforeEach(func() {
 				now := time.Now()
-				accessTokenExpiredAt := now.Add(-1 * time.Second).Unix()
-				refreshTokenExpiredAt := now.Add(10 * time.Second).Unix()
-				accessToken, _ = newJWT(customerID, accessTokenExpiredAt, testJWTSecret, false)
-				refreshToken, _ = newJWT(customerID, refreshTokenExpiredAt, testJWTSecret, true)
+				accessTokenExpiresAt := now.Add(-100 * time.Second)
+				refreshTokenExpiresAt := now.Add(100 * time.Second)
+				accessToken, _ = newJWT(customerID, accessTokenExpiresAt, testJWTSecret, false)
+				refreshToken, _ = newJWT(customerID, refreshTokenExpiresAt, testJWTSecret, true)
 			})
 			It("should generate a new token pair", func() {
 				mockJWTAuthRepo.EXPECT().
@@ -159,8 +162,8 @@ var _ = Describe("authentication", func() {
 		var _ = When("refresh token expires", func() {
 			BeforeEach(func() {
 				now := time.Now()
-				refreshTokenExpiredAt := now.Add(-1 * time.Second).Unix()
-				refreshToken, _ = newJWT(customerID, refreshTokenExpiredAt, testJWTSecret, true)
+				refreshTokenExpiresAt := now.Add(-1 * time.Second)
+				refreshToken, _ = newJWT(customerID, refreshTokenExpiresAt, testJWTSecret, true)
 			})
 			It("should get token expired error", func() {
 				_, _, err := authSvc.RefreshToken(context.Background(), refreshToken)
@@ -176,8 +179,8 @@ var _ = Describe("authentication", func() {
 				Expect(err).To(Equal(ErrInvalidToken))
 			})
 			It("should fail when passing valid access token", func() {
-				accessTokenExpiredAt := time.Now().Add(1 * time.Second).Unix()
-				accessToken, _ = newJWT(customerID, accessTokenExpiredAt, testJWTSecret, false)
+				accessTokenExpiresAt := time.Now().Add(1 * time.Second)
+				accessToken, _ = newJWT(customerID, accessTokenExpiresAt, testJWTSecret, false)
 				_, _, err := authSvc.RefreshToken(context.Background(), accessToken)
 				Expect(err).To(Equal(ErrInvalidToken))
 			})
@@ -185,10 +188,10 @@ var _ = Describe("authentication", func() {
 		var _ = When("customer is not valid", func() {
 			BeforeEach(func() {
 				now := time.Now()
-				accessTokenExpiredAt := now.Add(-1 * time.Second).Unix()
-				refreshTokenExpiredAt := now.Add(10 * time.Second).Unix()
-				accessToken, _ = newJWT(customerID, accessTokenExpiredAt, testJWTSecret, false)
-				refreshToken, _ = newJWT(customerID, refreshTokenExpiredAt, testJWTSecret, true)
+				accessTokenExpiresAt := now.Add(-1 * time.Second)
+				refreshTokenExpiresAt := now.Add(10 * time.Second)
+				accessToken, _ = newJWT(customerID, accessTokenExpiresAt, testJWTSecret, false)
+				refreshToken, _ = newJWT(customerID, refreshTokenExpiresAt, testJWTSecret, true)
 			})
 			It("should fail when customer does not exist", func() {
 				mockJWTAuthRepo.EXPECT().

@@ -117,7 +117,7 @@ func (r *Router) RefreshToken(c *gin.Context) {
 func (r *Router) GetCustomerPersonalInfo(c *gin.Context) {
 	customerID, ok := c.Request.Context().Value(config.CustomerKey).(uint64)
 	if !ok {
-		response(c, http.StatusUnauthorized, presenter.ErrUnautorized)
+		response(c, http.StatusUnauthorized, presenter.ErrUnauthorized)
 		return
 	}
 	personalInfo, err := r.customerSvc.GetCustomerPersonalInfo(c.Request.Context(), customerID)
@@ -141,7 +141,7 @@ func (r *Router) GetCustomerPersonalInfo(c *gin.Context) {
 func (r *Router) GetCustomerShippingInfo(c *gin.Context) {
 	customerID, ok := c.Request.Context().Value(config.CustomerKey).(uint64)
 	if !ok {
-		response(c, http.StatusUnauthorized, presenter.ErrUnautorized)
+		response(c, http.StatusUnauthorized, presenter.ErrUnauthorized)
 		return
 	}
 	shippingInfo, err := r.customerSvc.GetCustomerShippingInfo(c.Request.Context(), customerID)
@@ -169,7 +169,7 @@ func (r *Router) UpdateCustomerPersonalInfo(c *gin.Context) {
 	}
 	customerID, ok := c.Request.Context().Value(config.CustomerKey).(uint64)
 	if !ok {
-		response(c, http.StatusUnauthorized, presenter.ErrUnautorized)
+		response(c, http.StatusUnauthorized, presenter.ErrUnauthorized)
 		return
 	}
 	err := r.customerSvc.UpdateCustomerPersonalInfo(c.Request.Context(), customerID, &domain_model.CustomerPersonalInfo{
@@ -196,7 +196,7 @@ func (r *Router) UpdateCustomerShippingInfo(c *gin.Context) {
 	}
 	customerID, ok := c.Request.Context().Value(config.CustomerKey).(uint64)
 	if !ok {
-		response(c, http.StatusUnauthorized, presenter.ErrUnautorized)
+		response(c, http.StatusUnauthorized, presenter.ErrUnauthorized)
 		return
 	}
 	err := r.customerSvc.UpdateCustomerShippingInfo(c.Request.Context(), customerID, &domain_model.CustomerShippingInfo{
