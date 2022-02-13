@@ -8,7 +8,6 @@ require (
 	github.com/allegro/bigcache/v2 v2.2.5 // indirect
 	github.com/allegro/bigcache/v3 v3.0.0
 	github.com/avast/retry-go v3.0.0+incompatible
-	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
 	github.com/gin-gonic/gin v1.6.3
 	github.com/go-playground/validator/v10 v10.4.1 // indirect
@@ -16,6 +15,7 @@ require (
 	github.com/go-redsync/redsync/v4 v4.1.0
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/gogo/protobuf v1.3.2 // indirect
+	github.com/golang-jwt/jwt/v4 v4.3.0
 	github.com/golang/mock v1.4.4
 	github.com/google/wire v0.4.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.2.2

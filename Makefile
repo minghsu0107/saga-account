@@ -11,7 +11,7 @@ test: pretest runtest
 build: dep
 	$(GOBUILD) -o server -v ./cmd/main.go
 build-linux: dep
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(GOBUILD) -o server -v ./cmd/main.go
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(GOBUILD) -ldflags="-w -s" -o server -v ./cmd/main.go
 
 pretest: mockgen
 	$(shell $(GOCMD) env GOPATH)/bin/mockgen -source=repo/auth.go -destination=mock/repo/auth.go -package=mock_repo
