@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-redis/redis/extra/redisotel/v8"
 	"github.com/go-redis/redis/v8"
 	"github.com/go-redsync/redsync/v4"
 	"github.com/go-redsync/redsync/v4/redis/goredis/v8"
@@ -100,6 +101,7 @@ func NewRedisClient(config *config.Config) (redis.UniversalClient, error) {
 	if err == redis.Nil || err != nil {
 		return nil, err
 	}
+	RedisClient.AddHook(redisotel.TracingHook{})
 	config.Logger.ContextLogger.WithField("type", "setup:redis").Info("successful redis connection: " + pong)
 	return RedisClient, nil
 }
