@@ -1,5 +1,5 @@
 # Saga Account
-Account service of the [saga pattern implementation](https://github.com/minghsu0107/saga-example).
+Account service of my [saga pattern implementation](https://github.com/minghsu0107/saga-example).
 
 Features:
 - High performance gRPC authentication
