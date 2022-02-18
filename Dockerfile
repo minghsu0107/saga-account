@@ -10,6 +10,7 @@ COPY . .
 RUN make build-linux
 
 FROM alpine:3.14
+RUN apk update && apk add ca-certificates
 
 RUN mkdir -p /app
 WORKDIR /app
