@@ -57,12 +57,12 @@ func InitializeServer() (*infra.Server, error) {
 	jwtAuthChecker := middleware.NewJWTAuthChecker(configConfig, jwtAuthService)
 	server := http.NewServer(configConfig, engine, router, jwtAuthChecker)
 	grpcServer := grpc.NewGRPCServer(configConfig, jwtAuthService)
-	observibilityInjector, err := pkg2.NewObservibilityInjector(configConfig)
+	observabilityInjector, err := pkg2.NewObservabilityInjector(configConfig)
 	if err != nil {
 		return nil, err
 	}
 	localCacheCleaner := cache.NewLocalCacheCleaner(universalClient, localCache)
-	infraServer := infra.NewServer(server, grpcServer, observibilityInjector, localCacheCleaner)
+	infraServer := infra.NewServer(server, grpcServer, observabilityInjector, localCacheCleaner)
 	return infraServer, nil
 }
 

@@ -14,11 +14,11 @@ import (
 type Server struct {
 	HTTPServer   *infra_http.Server
 	GRPCServer   *infra_grpc.Server
-	ObsInjector  *infra_observe.ObservibilityInjector
+	ObsInjector  *infra_observe.ObservabilityInjector
 	CacheCleaner infra_cache.LocalCacheCleaner
 }
 
-func NewServer(httpServer *infra_http.Server, grpcServer *infra_grpc.Server, obsInjector *infra_observe.ObservibilityInjector, cacheCleaner infra_cache.LocalCacheCleaner) *Server {
+func NewServer(httpServer *infra_http.Server, grpcServer *infra_grpc.Server, obsInjector *infra_observe.ObservabilityInjector, cacheCleaner infra_cache.LocalCacheCleaner) *Server {
 	return &Server{
 		HTTPServer:   httpServer,
 		GRPCServer:   grpcServer,

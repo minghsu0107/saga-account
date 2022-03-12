@@ -35,7 +35,7 @@ func InitializeServer() (*infra.Server, error) {
 
 		infra_grpc.NewGRPCServer,
 
-		infra_observe.NewObservibilityInjector,
+		infra_observe.NewObservabilityInjector,
 
 		db.NewDatabaseConnection,
 
