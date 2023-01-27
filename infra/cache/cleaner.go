@@ -7,9 +7,9 @@ import (
 	"time"
 
 	retry "github.com/avast/retry-go"
-	"github.com/go-redis/redis/v8"
 	"github.com/minghsu0107/saga-account/config"
 	"github.com/minghsu0107/saga-account/pkg/workerpool"
+	"github.com/redis/go-redis/v9"
 )
 
 // LocalCacheCleaner subscribes to InvalidationTopic and invalidates entries

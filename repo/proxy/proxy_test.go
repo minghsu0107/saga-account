@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/alicebob/miniredis/v2"
-	"github.com/go-redis/redis/v8"
 	"github.com/golang/mock/gomock"
 	"github.com/minghsu0107/saga-account/config"
 	domain_model "github.com/minghsu0107/saga-account/domain/model"
@@ -18,6 +17,7 @@ import (
 	"github.com/minghsu0107/saga-account/repo"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/redis/go-redis/v9"
 	log "github.com/sirupsen/logrus"
 )
 

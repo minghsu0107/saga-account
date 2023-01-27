@@ -44,13 +44,12 @@ type LocalCacheConfig struct {
 
 // RedisConfig is redis config type
 type RedisConfig struct {
-	Addrs              string `yaml:"addrs" envconfig:"REDIS_ADDRS"`
-	Password           string `yaml:"password" envconfig:"REDIS_PASSWORD"`
-	DB                 int    `yaml:"db" envconfig:"REDIS_DB"`
-	PoolSize           int    `yaml:"poolSize" envconfig:"REDIS_POOL_SIZE"`
-	MaxRetries         int    `yaml:"maxRetries" envconfig:"REDIS_MAX_RETRIES"`
-	ExpirationSeconds  int64  `yaml:"expirationSeconds" envconfig:"REDIS_EXPIRATION_SECONDS"`
-	IdleTimeoutSeconds int64  `yaml:"idleTimeoutSeconds" envconfig:"REDIS_IDLE_TIMEOUT_SECONDS"`
+	Addrs             string `yaml:"addrs" envconfig:"REDIS_ADDRS"`
+	Password          string `yaml:"password" envconfig:"REDIS_PASSWORD"`
+	DB                int    `yaml:"db" envconfig:"REDIS_DB"`
+	PoolSize          int    `yaml:"poolSize" envconfig:"REDIS_POOL_SIZE"`
+	MaxRetries        int    `yaml:"maxRetries" envconfig:"REDIS_MAX_RETRIES"`
+	ExpirationSeconds int64  `yaml:"expirationSeconds" envconfig:"REDIS_EXPIRATION_SECONDS"`
 }
 
 // NewConfig is the factory of Config instance
